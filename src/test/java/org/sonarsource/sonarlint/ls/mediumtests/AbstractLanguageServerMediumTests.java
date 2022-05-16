@@ -112,7 +112,7 @@ public abstract class AbstractLanguageServerMediumTests {
   @BeforeAll
   static void startServer() throws Exception {
     System.setProperty(SonarLintTelemetry.DISABLE_PROPERTY_KEY, "true");
-    EnginesFactory.sonarLintUserHomeOverride = sonarLintUserHome;
+    EnginesFactory.setSonarLintUserHomeOverride(sonarLintUserHome);
     serverSocket = new ServerSocket(0);
     var port = serverSocket.getLocalPort();
 

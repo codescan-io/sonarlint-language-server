@@ -86,14 +86,12 @@ public class AnalysisTaskExecutor {
   private final SonarLintTelemetry telemetry;
   private final SkippedPluginsNotifier skippedPluginsNotifier;
   private final StandaloneEngineManager standaloneEngineManager;
-  private final DiagnosticPublisher diagnosticPublisher;
   private final SonarLintExtendedLanguageClient lsClient;
 
   public AnalysisTaskExecutor(ScmIgnoredCache filesIgnoredByScmCache, LanguageClientLogger lsLogOutput,
     WorkspaceFoldersManager workspaceFoldersManager, ProjectBindingManager bindingManager, JavaConfigCache javaConfigCache, SettingsManager settingsManager,
     FileTypeClassifier fileTypeClassifier, IssuesCache issuesCache, TaintVulnerabilitiesCache taintVulnerabilitiesCache, SonarLintTelemetry telemetry,
-    SkippedPluginsNotifier skippedPluginsNotifier, StandaloneEngineManager standaloneEngineManager, DiagnosticPublisher diagnosticPublisher,
-    SonarLintExtendedLanguageClient lsClient) {
+    SkippedPluginsNotifier skippedPluginsNotifier, StandaloneEngineManager standaloneEngineManager, SonarLintExtendedLanguageClient lsClient) {
     this.filesIgnoredByScmCache = filesIgnoredByScmCache;
     this.lsLogOutput = lsLogOutput;
     this.workspaceFoldersManager = workspaceFoldersManager;
@@ -106,7 +104,6 @@ public class AnalysisTaskExecutor {
     this.telemetry = telemetry;
     this.skippedPluginsNotifier = skippedPluginsNotifier;
     this.standaloneEngineManager = standaloneEngineManager;
-    this.diagnosticPublisher = diagnosticPublisher;
     this.lsClient = lsClient;
   }
 
@@ -130,7 +127,7 @@ public class AnalysisTaskExecutor {
 
     scmIgnored.forEach(f -> {
       lsLogOutput.debug(format("Skip analysis for SCM ignored file: '%s'", f));
-      clearIssueCacheAndPublishEmptyDiagnostics(f);
+      issuesCache.clear(f);
       filesToAnalyze.remove(f);
     });
 
@@ -142,11 +139,6 @@ public class AnalysisTaskExecutor {
   private boolean scmIgnored(URI fileUri) {
     var isIgnored = filesIgnoredByScmCache.isIgnored(fileUri).orElse(false);
     return Boolean.TRUE.equals(isIgnored);
-  }
-
-  private void clearIssueCacheAndPublishEmptyDiagnostics(URI f) {
-    issuesCache.clear(f);
-    diagnosticPublisher.publishDiagnostics(f);
   }
 
   private void analyze(AnalysisTask task, Optional<WorkspaceFolderWrapper> workspaceFolder, Map<URI, VersionnedOpenFile> filesToAnalyze) {
@@ -214,7 +206,7 @@ public class AnalysisTaskExecutor {
       } else {
         lsLogOutput.debug("Skipping analysis of C and C++ file(s) because configured compilation database does not exist: " + settings.getPathToCompileCommands());
       }
-      cOrCppFiles.keySet().forEach(this::clearIssueCacheAndPublishEmptyDiagnostics);
+      cOrCppFiles.keySet().forEach(issuesCache::clear);
       lsClient.needCompilationDatabase();
       return nonCNOrCppFiles;
     }
@@ -227,7 +219,7 @@ public class AnalysisTaskExecutor {
       var javaConfigOpt = javaConfigCache.getOrFetch(uri);
       if (javaConfigOpt.isEmpty()) {
         lsLogOutput.debug(format("Skipping analysis of Java file '%s' because SonarLint was unable to query project configuration (classpath, source level, ...)", uri));
-        clearIssueCacheAndPublishEmptyDiagnostics(uri);
+        issuesCache.clear(uri);
       } else {
         javaFilesWithConfig.put(uri, javaConfigOpt.get());
       }
@@ -256,7 +248,7 @@ public class AnalysisTaskExecutor {
       excludedByServerConfiguration.forEach(f -> {
         lsLogOutput.debug(format("Skip analysis of file '%s' excluded by server configuration", f));
         nonExcludedFiles.remove(f);
-        clearIssueCacheAndPublishEmptyDiagnostics(f);
+        issuesCache.clear(f);
       });
     }
 
@@ -338,7 +330,6 @@ public class AnalysisTaskExecutor {
         issuesCache.analysisSucceeded(filesToAnalyze.get(f));
         var foundIssues = issuesCache.count(f);
         totalIssueCount.addAndGet(foundIssues);
-        diagnosticPublisher.publishDiagnostics(f);
       });
       telemetry.addReportedRules(ruleKeys);
       lsLogOutput.info(format("Found %s %s", totalIssueCount.get(), pluralize(totalIssueCount.get(), "issue")));
@@ -353,7 +344,6 @@ public class AnalysisTaskExecutor {
         URI uri = inputFile.getClientObject();
         var versionnedOpenFile = filesToAnalyze.get(uri);
         issuesCache.reportIssue(versionnedOpenFile, issue);
-        diagnosticPublisher.publishDiagnostics(uri);
         ruleKeys.add(issue.getRuleKey());
       }
     };

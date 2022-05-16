@@ -39,7 +39,7 @@ import org.sonarsource.sonarlint.ls.log.LanguageClientLogOutput;
 
 public class EnginesFactory {
 
-  public static Path sonarLintUserHomeOverride = null;
+  private static Path sonarLintUserHomeOverride = null;
 
   private static final SonarLintLogger LOG = SonarLintLogger.get();
 
@@ -158,6 +158,10 @@ public class EnginesFactory {
 
   public void shutdown() {
     shutdown.set(true);
+  }
+
+  public static void setSonarLintUserHomeOverride(Path sonarLintUserHomeOverride) {
+    EnginesFactory.sonarLintUserHomeOverride = sonarLintUserHomeOverride;
   }
 
 }

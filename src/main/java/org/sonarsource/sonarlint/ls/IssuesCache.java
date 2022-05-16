@@ -33,12 +33,15 @@ import org.sonarsource.sonarlint.ls.file.VersionnedOpenFile;
 
 public class IssuesCache {
 
+  private DiagnosticPublisher diagnosticPublisher;
+
   private final Map<URI, Map<String, VersionnedIssue>> issuesPerIdPerFileURI = new ConcurrentHashMap<>();
   private final Map<URI, Map<String, VersionnedIssue>> inProgressAnalysisIssuesPerIdPerFileURI = new ConcurrentHashMap<>();
 
   public void clear(URI fileUri) {
     issuesPerIdPerFileURI.remove(fileUri);
     inProgressAnalysisIssuesPerIdPerFileURI.remove(fileUri);
+    diagnosticPublisher.publishDiagnostics(fileUri);
   }
 
   public void analysisStarted(VersionnedOpenFile versionnedOpenFile) {
@@ -48,6 +51,7 @@ public class IssuesCache {
   public void reportIssue(VersionnedOpenFile versionnedOpenFile, Issue issue) {
     inProgressAnalysisIssuesPerIdPerFileURI.computeIfAbsent(versionnedOpenFile.getUri(), u -> new HashMap<>()).put(UUID.randomUUID().toString(),
       new VersionnedIssue(issue, versionnedOpenFile.getVersion()));
+    diagnosticPublisher.publishDiagnostics(versionnedOpenFile.getUri());
   }
 
   public int count(URI f) {
@@ -67,6 +71,7 @@ public class IssuesCache {
     } else {
       issuesPerIdPerFileURI.remove(versionnedOpenFile.getUri());
     }
+    diagnosticPublisher.publishDiagnostics(versionnedOpenFile.getUri());
   }
 
   public Optional<VersionnedIssue> getIssueForDiagnostic(URI fileUri, Diagnostic d) {
@@ -98,5 +103,9 @@ public class IssuesCache {
 
   public Map<String, VersionnedIssue> get(URI fileUri) {
     return inProgressAnalysisIssuesPerIdPerFileURI.getOrDefault(fileUri, issuesPerIdPerFileURI.getOrDefault(fileUri, Map.of()));
+  }
+
+  public void setDiagnosticPublisher(DiagnosticPublisher diagnosticPublisher) {
+    this.diagnosticPublisher = diagnosticPublisher;
   }
 }
