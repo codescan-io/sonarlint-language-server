@@ -138,13 +138,11 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
     this.lsLogOutput = new LanguageClientLogger(this.client);
     var globalLogOutput = new LanguageClientLogOutput(lsLogOutput, false);
     SonarLintLogger.setTarget(globalLogOutput);
-    this.openFilesCache = new OpenFilesCache(lsLogOutput);
 
-    this.issuesCache = new IssuesCache();
+    this.diagnosticPublisher = new DiagnosticPublisher(client);
     this.taintVulnerabilitiesCache = new TaintVulnerabilitiesCache();
-    this.diagnosticPublisher = new DiagnosticPublisher(client, taintVulnerabilitiesCache, issuesCache);
-    issuesCache.setDiagnosticPublisher(diagnosticPublisher);
     this.workspaceFoldersManager = new WorkspaceFoldersManager();
+    this.openFilesCache = new OpenFilesCache(lsLogOutput, workspaceFoldersManager);
     this.progressManager = new ProgressManager(client);
     this.settingsManager = new SettingsManager(this.client, this.workspaceFoldersManager, httpClientProvider);
     this.nodeJsRuntime = new NodeJsRuntime(settingsManager);
@@ -155,6 +153,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
     this.standaloneEngineManager = new StandaloneEngineManager(enginesFactory);
     this.settingsManager.addListener(lsLogOutput);
     this.bindingManager = new ProjectBindingManager(enginesFactory, workspaceFoldersManager, settingsManager, client, progressManager, globalLogOutput);
+    this.issuesCache = new IssuesCache(diagnosticPublisher, taintVulnerabilitiesCache, bindingManager, lsLogOutput);
     this.settingsManager.setBindingManager(bindingManager);
     this.telemetry = new SonarLintTelemetry(httpClientProvider, settingsManager, bindingManager, nodeJsRuntime, standaloneEngineManager);
     this.settingsManager.addListener(telemetry);

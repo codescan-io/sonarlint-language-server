@@ -32,12 +32,14 @@ public class VersionnedOpenFile {
   private final String languageId;
   private final int version;
   private final String content;
+  private final String relativePath;
 
-  public VersionnedOpenFile(URI uri, String languageId, int version, String content) {
+  public VersionnedOpenFile(URI uri, String languageId, int version, String content, String relativePath) {
     this.uri = uri;
     this.languageId = languageId;
     this.version = version;
     this.content = content;
+    this.relativePath = relativePath;
   }
 
   public URI getUri() {
@@ -58,6 +60,10 @@ public class VersionnedOpenFile {
 
   public boolean isJava() {
     return "java".equals(languageId);
+  }
+
+  public String getRelativePath() {
+    return relativePath;
   }
 
   @Override

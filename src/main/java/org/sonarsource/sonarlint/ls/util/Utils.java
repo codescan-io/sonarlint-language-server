@@ -23,7 +23,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import java.net.URI;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -31,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.eclipse.lsp4j.Diagnostic;
-import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.ResponseErrorException;
@@ -127,20 +125,6 @@ public class Utils {
 
   public static boolean locationMatches(ServerIssue i, Diagnostic d) {
     return convert(i).equals(d.getRange());
-  }
-
-  public static DiagnosticSeverity severity(String severity) {
-    switch (severity.toUpperCase(Locale.ENGLISH)) {
-      case "BLOCKER":
-      case "CRITICAL":
-      case "MAJOR":
-        return DiagnosticSeverity.Warning;
-      case "MINOR":
-        return DiagnosticSeverity.Information;
-      case "INFO":
-      default:
-        return DiagnosticSeverity.Hint;
-    }
   }
 
   public static String buildMessageWithPluralizedSuffix(@Nullable String issueMessage, long nbItems, String itemName) {

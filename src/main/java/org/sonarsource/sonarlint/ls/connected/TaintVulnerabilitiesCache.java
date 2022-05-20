@@ -26,14 +26,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.eclipse.lsp4j.Diagnostic;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
-import org.sonarsource.sonarlint.ls.AnalysisScheduler;
 import org.sonarsource.sonarlint.ls.util.Utils;
-
-import static java.util.Collections.emptyList;
-import static org.sonarsource.sonarlint.ls.util.Utils.buildMessageWithPluralizedSuffix;
 
 public class TaintVulnerabilitiesCache {
 
@@ -71,45 +66,15 @@ public class TaintVulnerabilitiesCache {
       .findFirst();
   }
 
-  public Stream<Diagnostic> getAsDiagnostics(URI fileUri) {
-    return taintVulnerabilitiesPerFile.getOrDefault(fileUri, emptyList())
-      .stream()
-      .flatMap(i -> TaintVulnerabilitiesCache.convert(i).stream());
-  }
-
-  static Optional<Diagnostic> convert(ServerIssue issue) {
-    if (issue.getStartLine() != null) {
-      var range = Utils.convert(issue);
-      var diagnostic = new Diagnostic();
-      var severity = Utils.severity(issue.severity());
-
-      diagnostic.setSeverity(severity);
-      diagnostic.setRange(range);
-      diagnostic.setCode(issue.ruleKey());
-      diagnostic.setMessage(message(issue));
-      diagnostic.setSource(AnalysisScheduler.SONARQUBE_TAINT_SOURCE);
-      diagnostic.setData(issue.key());
-
-      return Optional.of(diagnostic);
-    }
-    return Optional.empty();
-  }
-
-  static String message(ServerIssue issue) {
-    if (issue.getFlows().isEmpty()) {
-      return issue.getMessage();
-    } else if (issue.getFlows().size() == 1) {
-      return buildMessageWithPluralizedSuffix(issue.getMessage(), issue.getFlows().get(0).locations().size(), AnalysisScheduler.ITEM_LOCATION);
-    } else {
-      return buildMessageWithPluralizedSuffix(issue.getMessage(), issue.getFlows().size(), AnalysisScheduler.ITEM_FLOW);
-    }
-  }
-
   public void reload(URI fileUri, List<ServerIssue> serverIssues) {
     taintVulnerabilitiesPerFile.put(fileUri, serverIssues.stream()
       .filter(it -> it.ruleKey().contains(SECURITY_REPOSITORY_HINT))
       .filter(it -> it.resolution().isEmpty())
       .collect(Collectors.toList()));
+  }
+
+  public List<ServerIssue> get(URI fileUri) {
+    return taintVulnerabilitiesPerFile.getOrDefault(fileUri, List.of());
   }
 
 }

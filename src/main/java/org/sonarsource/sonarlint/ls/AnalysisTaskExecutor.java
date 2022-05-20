@@ -43,7 +43,6 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.api.util.FileUtils;
 import org.sonarsource.sonarlint.core.commons.progress.CanceledException;
 import org.sonarsource.sonarlint.core.commons.progress.ClientProgressMonitor;
 import org.sonarsource.sonarlint.ls.SonarLintExtendedLanguageClient.GetJavaConfigResponse;
@@ -67,7 +66,6 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.partitioningBy;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.sonarsource.sonarlint.ls.util.Utils.pluralize;
@@ -235,15 +233,15 @@ public class AnalysisTaskExecutor {
     Map<URI, GetJavaConfigResponse> javaConfigs) {
 
     var baseDirUri = workspaceFolder.map(WorkspaceFolderWrapper::getUri)
-      // if files are not part of any workspace folder, take the common ancestor of all files (assume all files will have the same root)
-      .orElse(findCommonPrefix(filesToAnalyze.keySet().stream().map(Paths::get).collect(toList())).toUri());
+      // if files are not part of any workspace folder, take the root of the first file (assume they will all be in the same root)
+      .orElse(Paths.get(filesToAnalyze.entrySet().iterator().next().getKey()).getRoot().toUri());
 
     var nonExcludedFiles = new HashMap<>(filesToAnalyze);
     if (binding.isPresent()) {
       var connectedEngine = binding.get().getEngine();
       var excludedByServerConfiguration = connectedEngine.getExcludedFiles(binding.get().getBinding(),
         filesToAnalyze.keySet(),
-        uri -> getFileRelativePath(Paths.get(baseDirUri), uri),
+        uri -> filesToAnalyze.get(uri).getRelativePath(),
         uri -> fileTypeClassifier.isTest(settings, uri, javaConfigCache.getOrFetch(uri)));
       excludedByServerConfiguration.forEach(f -> {
         lsLogOutput.debug(format("Skip analysis of file '%s' excluded by server configuration", f));
@@ -256,28 +254,6 @@ public class AnalysisTaskExecutor {
       analyzeSingleModuleNonExcluded(task, settings, binding, nonExcludedFiles, baseDirUri, javaConfigs);
     }
 
-  }
-
-  String getFileRelativePath(Path baseDir, URI uri) {
-    try {
-      return baseDir.relativize(Paths.get(uri)).toString();
-    } catch (IllegalArgumentException e) {
-      // Possibly the file has not the same root as baseDir
-      lsLogOutput.debug("Unable to relativize " + uri + " to " + baseDir);
-      return Paths.get(uri).toString();
-    }
-  }
-
-  private static Path findCommonPrefix(List<Path> paths) {
-    Path currentPrefixCandidate = paths.get(0).getParent();
-    while (currentPrefixCandidate.getNameCount() > 0 && !isPrefixForAll(currentPrefixCandidate, paths)) {
-      currentPrefixCandidate = currentPrefixCandidate.getParent();
-    }
-    return currentPrefixCandidate;
-  }
-
-  private static boolean isPrefixForAll(Path prefixCandidate, Collection<Path> paths) {
-    return paths.stream().allMatch(p -> p.startsWith(prefixCandidate));
   }
 
   private void analyzeSingleModuleNonExcluded(AnalysisTask task, WorkspaceFolderSettings settings, Optional<ProjectBindingWrapper> binding,
@@ -403,9 +379,7 @@ public class AnalysisTaskExecutor {
 
     var engine = standaloneEngineManager.getOrCreateStandaloneEngine();
     return analyzeWithTiming(() -> engine.analyze(configuration, issueListener, new LanguageClientLogOutput(lsLogOutput, true), new TaskProgressMonitor(task)),
-      engine.getPluginDetails(),
-      () -> {
-      });
+      engine.getPluginDetails());
   }
 
   private AnalysisResultsWrapper analyzeConnected(AnalysisTask task, ProjectBindingWrapper binding, WorkspaceFolderSettings settings, URI baseDirUri,
@@ -423,7 +397,6 @@ public class AnalysisTaskExecutor {
     lsLogOutput.debug(format("Analysis triggered with configuration:%n%s", configuration.toString()));
 
     var engine = binding.getEngine();
-    var serverIssueTracker = binding.getServerIssueTracker();
     var issuesPerFiles = new HashMap<URI, List<Issue>>();
     IssueListener accumulatorIssueListener = i -> {
       var inputFile = i.getInputFile();
@@ -432,22 +405,11 @@ public class AnalysisTaskExecutor {
         issuesPerFiles.computeIfAbsent(inputFile.getClientObject(), uri -> new ArrayList<>()).add(i);
       }
     };
+    if (task.shouldFetchServerIssues()) {
+      issuesCache.scheduleUpdateOfServerIssues(filesToAnalyze, binding);
+    }
     return analyzeWithTiming(() -> engine.analyze(configuration, accumulatorIssueListener, new LanguageClientLogOutput(lsLogOutput, true), new TaskProgressMonitor(task)),
-      engine.getPluginDetails(),
-      () -> filesToAnalyze.forEach((fileUri, openFile) -> {
-        var issues = issuesPerFiles.computeIfAbsent(fileUri, uri -> List.of());
-        var filePath = FileUtils.toSonarQubePath(getFileRelativePath(baseDir, fileUri));
-        serverIssueTracker.matchAndTrack(filePath, issues, issueListener, task.shouldFetchServerIssues());
-        if (task.shouldFetchServerIssues()) {
-          var serverIssues = engine.getServerIssues(binding.getBinding(), filePath);
-          taintVulnerabilitiesCache.reload(fileUri, serverIssues);
-          long foundVulnerabilities = taintVulnerabilitiesCache.getAsDiagnostics(fileUri).count();
-          if (foundVulnerabilities > 0) {
-            lsLogOutput
-              .info(format("Fetched %s %s from %s", foundVulnerabilities, pluralize(foundVulnerabilities, "vulnerability", "vulnerabilities"), binding.getConnectionId()));
-          }
-        }
-      }));
+      engine.getPluginDetails());
   }
 
   private <G extends AbstractBuilder<G>> G buildCommonAnalysisConfiguration(WorkspaceFolderSettings settings, URI baseDirUri, Map<URI, VersionnedOpenFile> filesToAnalyze,
@@ -463,7 +425,7 @@ public class AnalysisTaskExecutor {
     }
     filesToAnalyze.forEach((uri, openFile) -> configurationBuilder
       .addInputFiles(
-        new AnalysisClientInputFile(uri, getFileRelativePath(baseDir, uri), openFile.getContent(),
+        new AnalysisClientInputFile(uri, openFile.getRelativePath(), openFile.getContent(),
           fileTypeClassifier.isTest(settings, uri, ofNullable(javaConfigs.get(uri))),
           openFile.getLanguageId())));
     return configurationBuilder;
@@ -471,12 +433,10 @@ public class AnalysisTaskExecutor {
 
   /**
    * @param analyze Analysis callback
-   * @param postAnalysisTask Code that will be run after the analysis, but still counted in the total analysis duration.
    */
-  private static AnalysisResultsWrapper analyzeWithTiming(Supplier<AnalysisResults> analyze, Collection<PluginDetails> allPlugins, Runnable postAnalysisTask) {
+  private static AnalysisResultsWrapper analyzeWithTiming(Supplier<AnalysisResults> analyze, Collection<PluginDetails> allPlugins) {
     long start = System.currentTimeMillis();
     var analysisResults = analyze.get();
-    postAnalysisTask.run();
     int analysisTime = (int) (System.currentTimeMillis() - start);
     return new AnalysisResultsWrapper(analysisResults, analysisTime, allPlugins);
   }

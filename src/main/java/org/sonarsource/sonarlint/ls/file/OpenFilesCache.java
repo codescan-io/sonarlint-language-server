@@ -24,7 +24,11 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.sonarsource.sonarlint.core.client.api.util.FileUtils;
+import org.sonarsource.sonarlint.ls.folders.WorkspaceFolderWrapper;
+import org.sonarsource.sonarlint.ls.folders.WorkspaceFoldersManager;
 import org.sonarsource.sonarlint.ls.log.LanguageClientLogger;
+import org.sonarsource.sonarlint.shaded.org.apache.commons.lang3.StringUtils;
 
 import static java.lang.String.format;
 
@@ -33,15 +37,24 @@ import static java.lang.String.format;
  */
 public class OpenFilesCache {
   private final LanguageClientLogger lsLogOutput;
+  private final WorkspaceFoldersManager foldersManager;
 
   private final Map<URI, VersionnedOpenFile> openFilesPerFileURI = new ConcurrentHashMap<>();
 
-  public OpenFilesCache(LanguageClientLogger lsLogOutput) {
+  public OpenFilesCache(LanguageClientLogger lsLogOutput, WorkspaceFoldersManager foldersManager) {
     this.lsLogOutput = lsLogOutput;
+    this.foldersManager = foldersManager;
   }
 
   public VersionnedOpenFile didOpen(URI fileUri, String languageId, String fileContent, int version) {
-    var file = new VersionnedOpenFile(fileUri, languageId, version, fileContent);
+    Optional<WorkspaceFolderWrapper> folder = foldersManager.findFolderForFile(fileUri);
+    String relativePathToBaseDir;
+    if (folder.isPresent()) {
+      relativePathToBaseDir = FileUtils.toSonarQubePath(folder.get().getUri().relativize(fileUri).getPath());
+    } else {
+      relativePathToBaseDir = StringUtils.substringAfterLast(fileUri.getPath(), "/");
+    }
+    var file = new VersionnedOpenFile(fileUri, languageId, version, fileContent, relativePathToBaseDir);
     openFilesPerFileURI.put(fileUri, file);
     return file;
   }
@@ -50,7 +63,7 @@ public class OpenFilesCache {
     if (!openFilesPerFileURI.containsKey(fileUri)) {
       lsLogOutput.warn(format("Illegal state. File '%s' is reported changed but we missed the open notification", fileUri));
     }
-    openFilesPerFileURI.computeIfPresent(fileUri, (uri, previous) -> new VersionnedOpenFile(uri, previous.getLanguageId(), version, fileContent));
+    openFilesPerFileURI.computeIfPresent(fileUri, (uri, previous) -> new VersionnedOpenFile(uri, previous.getLanguageId(), version, fileContent, previous.getRelativePath()));
   }
 
   public void didClose(URI fileUri) {

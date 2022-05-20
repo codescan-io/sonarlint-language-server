@@ -22,26 +22,50 @@ package org.sonarsource.sonarlint.ls;
 import com.google.gson.JsonPrimitive;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.lsp4j.Diagnostic;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.ls.connected.ProjectBindingManager;
+import org.sonarsource.sonarlint.ls.connected.ProjectBindingWrapper;
+import org.sonarsource.sonarlint.ls.connected.ServerIssueTrackerWrapper;
+import org.sonarsource.sonarlint.ls.connected.TaintVulnerabilitiesCache;
 import org.sonarsource.sonarlint.ls.file.VersionnedOpenFile;
+import org.sonarsource.sonarlint.ls.log.LanguageClientLogger;
+
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
+import static org.sonarsource.sonarlint.ls.util.Utils.pluralize;
 
 public class IssuesCache {
 
-  private DiagnosticPublisher diagnosticPublisher;
+  private final DiagnosticPublisher diagnosticPublisher;
+  private final TaintVulnerabilitiesCache taintVulnerabilitiesCache;
+  private final ProjectBindingManager bindingManager;
+  private final LanguageClientLogger lsLogOutput;
 
   private final Map<URI, Map<String, VersionnedIssue>> issuesPerIdPerFileURI = new ConcurrentHashMap<>();
   private final Map<URI, Map<String, VersionnedIssue>> inProgressAnalysisIssuesPerIdPerFileURI = new ConcurrentHashMap<>();
+  private final Map<URI, CompletableFuture<Void>> updateIssuesTasks = new ConcurrentHashMap<>();
+
+  public IssuesCache(DiagnosticPublisher diagnosticPublisher, TaintVulnerabilitiesCache taintVulnerabilitiesCache, ProjectBindingManager bindingManager,
+    LanguageClientLogger lsLogOutput) {
+    this.diagnosticPublisher = diagnosticPublisher;
+    this.taintVulnerabilitiesCache = taintVulnerabilitiesCache;
+    this.bindingManager = bindingManager;
+    this.lsLogOutput = lsLogOutput;
+  }
 
   public void clear(URI fileUri) {
     issuesPerIdPerFileURI.remove(fileUri);
     inProgressAnalysisIssuesPerIdPerFileURI.remove(fileUri);
-    diagnosticPublisher.publishDiagnostics(fileUri);
+    updateIssuesTasks.remove(fileUri);
+    diagnosticPublisher.publishDiagnostics(fileUri, Map.of(), List.of());
   }
 
   public void analysisStarted(VersionnedOpenFile versionnedOpenFile) {
@@ -49,9 +73,21 @@ public class IssuesCache {
   }
 
   public void reportIssue(VersionnedOpenFile versionnedOpenFile, Issue issue) {
-    inProgressAnalysisIssuesPerIdPerFileURI.computeIfAbsent(versionnedOpenFile.getUri(), u -> new HashMap<>()).put(UUID.randomUUID().toString(),
+    URI fileUri = versionnedOpenFile.getUri();
+    inProgressAnalysisIssuesPerIdPerFileURI.computeIfAbsent(fileUri, u -> new HashMap<>()).put(UUID.randomUUID().toString(),
       new VersionnedIssue(issue, versionnedOpenFile.getVersion()));
-    diagnosticPublisher.publishDiagnostics(versionnedOpenFile.getUri());
+    diagnosticPublisher.publishDiagnostics(fileUri, get(fileUri), taintVulnerabilitiesCache.get(fileUri));
+  }
+
+  public void reportIssueConnected(VersionnedOpenFile versionnedOpenFile, Issue issue, ServerIssueTrackerWrapper serverIssueTracker) {
+    URI fileUri = versionnedOpenFile.getUri();
+    Map<String, VersionnedIssue> issuesPerUuid = inProgressAnalysisIssuesPerIdPerFileURI.computeIfAbsent(fileUri, u -> new HashMap<>());
+    issuesPerUuid.put(UUID.randomUUID().toString(), new VersionnedIssue(issue, versionnedOpenFile.getVersion()));
+
+    List<Issue> issuesToTrack = issuesPerUuid.values().stream().map(vi -> vi.getIssue()).collect(toList());
+    serverIssueTracker.matchAndTrack(versionnedOpenFile.getRelativePath(), issuesToTrack, issueListener);
+
+    diagnosticPublisher.publishDiagnostics(fileUri, get(fileUri), taintVulnerabilitiesCache.get(fileUri));
   }
 
   public int count(URI f) {
@@ -64,14 +100,16 @@ public class IssuesCache {
   }
 
   public void analysisSucceeded(VersionnedOpenFile versionnedOpenFile) {
+    URI fileUri = versionnedOpenFile.getUri();
+    updateIssuesTasks.getOrDefault(fileUri, CompletableFuture.completedFuture(null)).join();
     // Swap issues
-    var newIssues = inProgressAnalysisIssuesPerIdPerFileURI.remove(versionnedOpenFile.getUri());
+    var newIssues = inProgressAnalysisIssuesPerIdPerFileURI.remove(fileUri);
     if (newIssues != null) {
-      issuesPerIdPerFileURI.put(versionnedOpenFile.getUri(), newIssues);
+      issuesPerIdPerFileURI.put(fileUri, newIssues);
     } else {
-      issuesPerIdPerFileURI.remove(versionnedOpenFile.getUri());
+      issuesPerIdPerFileURI.remove(fileUri);
     }
-    diagnosticPublisher.publishDiagnostics(versionnedOpenFile.getUri());
+    diagnosticPublisher.publishDiagnostics(fileUri, get(fileUri), taintVulnerabilitiesCache.get(fileUri));
   }
 
   public Optional<VersionnedIssue> getIssueForDiagnostic(URI fileUri, Diagnostic d) {
@@ -101,11 +139,25 @@ public class IssuesCache {
     }
   }
 
-  public Map<String, VersionnedIssue> get(URI fileUri) {
+  private Map<String, VersionnedIssue> get(URI fileUri) {
     return inProgressAnalysisIssuesPerIdPerFileURI.getOrDefault(fileUri, issuesPerIdPerFileURI.getOrDefault(fileUri, Map.of()));
   }
 
-  public void setDiagnosticPublisher(DiagnosticPublisher diagnosticPublisher) {
-    this.diagnosticPublisher = diagnosticPublisher;
+  public void scheduleUpdateOfServerIssues(Map<URI, VersionnedOpenFile> filesToAnalyze, ProjectBindingWrapper bindingWrapper) {
+    filesToAnalyze.forEach((fileUri, openFile) -> {
+      // Don't queue a new update of server issues if one is still running
+      if (updateIssuesTasks.getOrDefault(fileUri, CompletableFuture.completedFuture(null)).isDone()) {
+        var relativeFilePath = openFile.getRelativePath();
+        updateIssuesTasks.put(fileUri, bindingManager.updateServerIssues(bindingWrapper, relativeFilePath).thenAccept(serverIssues -> {
+          taintVulnerabilitiesCache.reload(fileUri, serverIssues);
+          long foundVulnerabilities = taintVulnerabilitiesCache.get(fileUri).size();
+          if (foundVulnerabilities > 0) {
+            lsLogOutput
+              .info(format("Fetched %s taint %s for %s", foundVulnerabilities, pluralize(foundVulnerabilities, "vulnerability", "vulnerabilities"), fileUri));
+          }
+        }));
+      }
+    });
   }
+
 }
