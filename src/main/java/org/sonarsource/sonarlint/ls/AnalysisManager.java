@@ -157,7 +157,7 @@ public class AnalysisManager implements WorkspaceSettingsChangeListener, Workspa
     this.fileTypeClassifier = fileTypeClassifier;
     this.fileLanguageCache = fileLanguageCache;
     this.javaConfigCache = javaConfigCache;
-    this.analysisExecutor = Executors.newSingleThreadExecutor(Utils.threadFactory("SonarLint analysis", false));
+    this.analysisExecutor = Executors.newSingleThreadExecutor(Utils.threadFactory("CodeScan analysis", false));
     this.watcher = new EventWatcher();
     this.taintVulnerabilitiesPerFile = taintVulnerabilitiesPerFile;
     this.filesIgnoredByScmCache = new ScmIgnoredCache(client);
@@ -298,7 +298,7 @@ public class AnalysisManager implements WorkspaceSettingsChangeListener, Workspa
   private void analyze(URI fileUri, boolean shouldFetchServerIssues) {
     final var javaConfigOpt = javaConfigCache.getOrFetch(fileUri);
     if (fileLanguageCache.isJava(fileUri) && javaConfigOpt.isEmpty()) {
-      LOG.debug("Skipping analysis of Java file '{}' because SonarLint was unable to query project configuration (classpath, source level, ...)", fileUri);
+      LOG.debug("Skipping analysis of Java file '{}' because CodeScan was unable to query project configuration (classpath, source level, ...)", fileUri);
       return;
     }
     var isIgnored = filesIgnoredByScmCache.isIgnored(fileUri).orElse(false);
@@ -489,6 +489,15 @@ public class AnalysisManager implements WorkspaceSettingsChangeListener, Workspa
   public AnalysisResultsWrapper analyzeConnected(ProjectBindingWrapper binding, WorkspaceFolderSettings settings, URI baseDirUri, URI uri, String content,
     IssueListener issueListener, boolean shouldFetchServerIssues, Optional<GetJavaConfigResponse> javaConfig) {
     var baseDir = Paths.get(baseDirUri);
+
+    //pass sonar host credentials in so that we can resolve license.
+    var codescanProps = new HashMap<String, String>();
+    var serverConnectionSettings = settingsManager.getCurrentSettings()
+            .getServerConnections().get(settings.getConnectionId());
+    codescanProps.put("sonar.host.url", serverConnectionSettings.getServerUrl());
+    codescanProps.put("sonar.organization", serverConnectionSettings.getOrganizationKey());
+    codescanProps.put("sonar.login", serverConnectionSettings.getToken());
+
     var configuration = ConnectedAnalysisConfiguration.builder()
       .setProjectKey(settings.getProjectKey())
       .setBaseDir(baseDir)
@@ -497,6 +506,7 @@ public class AnalysisManager implements WorkspaceSettingsChangeListener, Workspa
         new AnalysisClientInputFile(uri, getFileRelativePath(baseDir, uri), content, fileTypeClassifier.isTest(settings, uri, javaConfig), fileLanguageCache.getLanguageFor(uri)))
       .putAllExtraProperties(settings.getAnalyzerProperties())
       .putAllExtraProperties(configureJavaProperties(uri))
+      .putAllExtraProperties(codescanProps)
       .build();
     if (settingsManager.getCurrentSettings().hasLocalRuleConfiguration()) {
       LOG.debug("Local rules settings are ignored, using quality profile from server");
@@ -509,7 +519,7 @@ public class AnalysisManager implements WorkspaceSettingsChangeListener, Workspa
     return analyzeWithTiming(() -> engine.analyze(configuration, issues::add, null, null),
       engine.getPluginDetails(),
       () -> {
-        var filePath = FileUtils.toSonarQubePath(getFileRelativePath(baseDir, uri));
+        var filePath = FileUtils.toCodeScanPath(getFileRelativePath(baseDir, uri));
         var serverIssueTracker = binding.getServerIssueTracker();
         serverIssueTracker.matchAndTrack(filePath, issues, issueListener, shouldFetchServerIssues);
         var serverIssues = engine.getServerIssues(binding.getBinding(), filePath);

@@ -237,7 +237,7 @@ class ServerNotificationsTest {
     var projectKey = "projectKey";
     var notification = new DefaultServerNotification(category, message, link, projectKey, ZonedDateTime.now());
 
-    var browseAction = new MessageActionItem("Show on SonarQube");
+    var browseAction = new MessageActionItem("Show on CodeScan");
     var settingsAction = new MessageActionItem("Open Settings");
     when(client.showMessageRequest(any())).thenReturn(CompletableFuture.completedFuture(browseAction));
 
@@ -248,7 +248,7 @@ class ServerNotificationsTest {
     verify(client).showMessageRequest(messageCaptor.capture());
     var shownMessage = messageCaptor.getValue();
     assertThat(shownMessage).extracting(ShowMessageRequestParams::getMessage, ShowMessageRequestParams::getActions)
-      .containsExactly("SonarQube Notification: message", List.of(browseAction, settingsAction));
+      .containsExactly("CodeScan Notification: message", List.of(browseAction, settingsAction));
     verify(telemetry).devNotificationsClicked(category);
     verify(client).browseTo(link);
   }
@@ -262,7 +262,7 @@ class ServerNotificationsTest {
     var projectKey = "projectKey";
     var notification = new DefaultServerNotification(category, message, link, projectKey, ZonedDateTime.now());
 
-    var browseAction = new MessageActionItem("Show on SonarQube");
+    var browseAction = new MessageActionItem("Show on CodeScan");
     var settingsAction = new MessageActionItem("Open Settings");
     when(client.showMessageRequest(any())).thenReturn(CompletableFuture.completedFuture(settingsAction));
 
@@ -273,7 +273,7 @@ class ServerNotificationsTest {
     verify(client).showMessageRequest(messageCaptor.capture());
     var shownMessage = messageCaptor.getValue();
     assertThat(shownMessage).extracting(ShowMessageRequestParams::getMessage, ShowMessageRequestParams::getActions)
-      .containsExactly("SonarQube Notification: message", List.of(browseAction, settingsAction));
+      .containsExactly("CodeScan Notification: message", List.of(browseAction, settingsAction));
 
     verify(client).openConnectionSettings(false);
   }

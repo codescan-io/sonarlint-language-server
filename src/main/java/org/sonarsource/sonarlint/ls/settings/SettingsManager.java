@@ -59,7 +59,7 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
   private static final String SERVER_ID = "serverId";
   private static final String TOKEN = "token";
   private static final String CONNECTION_ID = "connectionId";
-  private static final String SONARLINT_CONFIGURATION_NAMESPACE = "sonarlint";
+  private static final String SONARLINT_CONFIGURATION_NAMESPACE = "codescan";
   private static final String DISABLE_TELEMETRY = "disableTelemetry";
   private static final String RULES = "rules";
   private static final String TEST_FILE_PATTERN = "testFilePattern";
@@ -89,7 +89,7 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
     this.client = client;
     this.foldersManager = foldersManager;
     this.httpClient = httpClient;
-    this.executor = Executors.newCachedThreadPool(Utils.threadFactory("SonarLint settings manager", false));
+    this.executor = Executors.newCachedThreadPool(Utils.threadFactory("CodeScan settings manager", false));
   }
 
   /**
@@ -211,20 +211,15 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
 
   private static Map<String, ServerConnectionSettings> parseServerConnections(Map<String, Object> params, ApacheHttpClient httpClient) {
     @SuppressWarnings("unchecked")
-    var connectedModeMap = (Map<String, Object>) params.getOrDefault("connectedMode", Collections.emptyMap());
     var serverConnections = new HashMap<String, ServerConnectionSettings>();
-    parseDeprecatedServerEntries(connectedModeMap, serverConnections, httpClient);
-    @SuppressWarnings("unchecked")
-    var connectionsMap = (Map<String, Object>) connectedModeMap.getOrDefault("connections", Collections.emptyMap());
-    parseSonarQubeConnections(connectionsMap, serverConnections, httpClient);
-    parseSonarCloudConnections(connectionsMap, serverConnections, httpClient);
+    parseServerEntries(params, serverConnections, httpClient);
     return serverConnections;
   }
 
-  private static void parseDeprecatedServerEntries(Map<String, Object> connectedModeMap, Map<String, ServerConnectionSettings> serverConnections, ApacheHttpClient httpClient) {
+  private static void parseServerEntries(Map<String, Object> params, Map<String, ServerConnectionSettings> serverConnections, ApacheHttpClient httpClient) {
     @SuppressWarnings("unchecked")
-    var deprecatedServersEntries = (List<Map<String, Object>>) connectedModeMap.getOrDefault("servers", Collections.emptyList());
-    deprecatedServersEntries.forEach(m -> {
+    var serversEntries = (List<Map<String, Object>>) params.getOrDefault("servers", Collections.emptyList());
+    serversEntries.forEach(m -> {
       if (checkRequiredAttribute(m, "server", SERVER_ID, SERVER_URL, TOKEN)) {
         var connectionId = (String) m.get(SERVER_ID);
         var url = (String) m.get(SERVER_URL);
@@ -232,37 +227,6 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
         var organization = (String) m.get(ORGANIZATION_KEY);
         var connectionSettings = new ServerConnectionSettings(connectionId, url, token, organization, false, httpClient);
         addIfUniqueConnectionId(serverConnections, connectionId, connectionSettings);
-      }
-    });
-  }
-
-  private static void parseSonarQubeConnections(Map<String, Object> connectionsMap, Map<String, ServerConnectionSettings> serverConnections, ApacheHttpClient httpClient) {
-    @SuppressWarnings("unchecked")
-    var sonarqubeEntries = (List<Map<String, Object>>) connectionsMap.getOrDefault("sonarqube", Collections.emptyList());
-    sonarqubeEntries.forEach(m -> {
-      if (checkRequiredAttribute(m, "SonarQube server", SERVER_URL, TOKEN)) {
-        var connectionId = defaultIfBlank((String) m.get(CONNECTION_ID), DEFAULT_CONNECTION_ID);
-        var url = (String) m.get(SERVER_URL);
-        var token = (String) m.get(TOKEN);
-        var disableNotifications = (Boolean) m.getOrDefault(DISABLE_NOTIFICATIONS, false);
-        var connectionSettings = new ServerConnectionSettings(connectionId, url, token, null, disableNotifications, httpClient);
-        addIfUniqueConnectionId(serverConnections, connectionId, connectionSettings);
-      }
-    });
-  }
-
-  private static void parseSonarCloudConnections(Map<String, Object> connectionsMap, Map<String, ServerConnectionSettings> serverConnections, ApacheHttpClient httpClient) {
-    @SuppressWarnings("unchecked")
-    var sonarcloudEntries = (List<Map<String, Object>>) connectionsMap.getOrDefault("sonarcloud", Collections.emptyList());
-    sonarcloudEntries.forEach(m -> {
-
-      if (checkRequiredAttribute(m, "SonarCloud", ORGANIZATION_KEY, TOKEN)) {
-        var connectionId = defaultIfBlank((String) m.get(CONNECTION_ID), DEFAULT_CONNECTION_ID);
-        var organizationKey = (String) m.get(ORGANIZATION_KEY);
-        var token = (String) m.get(TOKEN);
-        var disableNotifs = (Boolean) m.getOrDefault(DISABLE_NOTIFICATIONS, false);
-        addIfUniqueConnectionId(serverConnections, connectionId,
-          new ServerConnectionSettings(connectionId, ServerConnectionSettings.SONARCLOUD_URL, token, organizationKey, disableNotifs, httpClient));
       }
     });
   }
@@ -279,7 +243,7 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
   private static void addIfUniqueConnectionId(Map<String, ServerConnectionSettings> serverConnections, String connectionId, ServerConnectionSettings connectionSettings) {
     if (serverConnections.containsKey(connectionId)) {
       if (DEFAULT_CONNECTION_ID.equals(connectionId)) {
-        LOG.error("Please specify a unique 'connectionId' in your settings for each of the SonarQube/SonarCloud connections.");
+        LOG.error("Please specify a unique 'connectionId' in your settings for each of the CodeScan connections.");
       } else {
         LOG.error("Multiple server connections with the same identifier '{}'. Fix your settings.", connectionId);
       }
@@ -294,18 +258,16 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
     var analyzerProperties = getAnalyzerProperties(params);
     String connectionId = null;
     String projectKey = null;
-    @SuppressWarnings("unchecked")
-    var connectedModeMap = (Map<String, Object>) params.getOrDefault("connectedMode", Collections.emptyMap());
-    if (connectedModeMap.containsKey(PROJECT)) {
+    if (params.containsKey(PROJECT)) {
       @SuppressWarnings("unchecked")
-      var projectBinding = (Map<String, String>) connectedModeMap.get(PROJECT);
-      // params.connectedMode.project is present but empty when there is no project binding
+      var projectBinding = (Map<String, String>) params.get(PROJECT);
+      // params.project is present but empty when there is no project binding
       if (!projectBinding.isEmpty()) {
         projectKey = projectBinding.get("projectKey");
         connectionId = projectBinding.getOrDefault(SERVER_ID, projectBinding.get(CONNECTION_ID));
         if (isBlank(connectionId)) {
           if (currentSettings.getServerConnections().isEmpty()) {
-            LOG.error("No SonarQube/SonarCloud connections defined for your binding. Please update your settings.");
+            LOG.error("No CodeScan connections defined for your binding. Please update your settings.");
           } else if (currentSettings.getServerConnections().size() == 1) {
             connectionId = currentSettings.getServerConnections().keySet().iterator().next();
           } else {
@@ -314,7 +276,7 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
             connectionId = null;
           }
         } else if (!currentSettings.getServerConnections().containsKey(connectionId)) {
-          LOG.error("No SonarQube/SonarCloud connections defined for your binding with id '{}'. Please update your settings.", connectionId);
+          LOG.error("No CodeScan connections defined for your binding with id '{}'. Please update your settings.", connectionId);
         }
       }
     }

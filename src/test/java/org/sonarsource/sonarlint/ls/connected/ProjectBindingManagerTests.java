@@ -217,7 +217,7 @@ class ProjectBindingManagerTests {
 
     assertThat(underTest.getBinding(fileInAWorkspaceFolderPath.toUri())).isEmpty();
 
-    assertThat(logTester.logs(LoggerLevel.ERROR)).containsOnly("Error starting connected SonarLint engine for '" + CONNECTION_ID + "'");
+    assertThat(logTester.logs(LoggerLevel.ERROR)).containsOnly("Error starting connected CodeScan engine for '" + CONNECTION_ID + "'");
   }
 
   @Test
@@ -556,13 +556,13 @@ class ProjectBindingManagerTests {
     assertThat(binding).isNotEmpty();
 
     assertThat(logTester.logs())
-      .contains("Starting connected SonarLint engine for 'myServer'...");
+      .contains("Starting connected CodeScan engine for 'myServer'...");
 
     var binding2 = underTest.getBinding(fileInAWorkspaceFolderPath2.toUri());
     assertThat(binding2).isNotEmpty();
 
     assertThat(logTester.logs())
-      .contains("Starting connected SonarLint engine for 'myServer2'...");
+      .contains("Starting connected CodeScan engine for 'myServer2'...");
 
     verify(enginesFactory).createConnectedEngine("myServer");
     verify(enginesFactory).createConnectedEngine("myServer2");
@@ -742,7 +742,7 @@ class ProjectBindingManagerTests {
 
     underTest.getBinding(fileInAWorkspaceFolderPath.toUri());
 
-    verify(client, times(1)).showMessage(new MessageParams(MessageType.Error, "Binding update failed for the server: " + serverId + ". Look to the SonarLint output for details."));
+    verify(client, times(1)).showMessage(new MessageParams(MessageType.Error, "Binding update failed for the server: " + serverId + ". Look to the CodeScan output for details."));
   }
 
   @Test
@@ -780,7 +780,7 @@ class ProjectBindingManagerTests {
     underTest.updateAllBindings(mock(CancelChecker.class), null);
 
     verify(client, times(1))
-      .showMessage(new MessageParams(MessageType.Error, "Binding update failed for the following connection(s): " + connectionId + ". Look at the SonarLint output for details."));
+      .showMessage(new MessageParams(MessageType.Error, "Binding update failed for the following connection(s): " + connectionId + ". Look at the CodeScan output for details."));
   }
 
   @Test

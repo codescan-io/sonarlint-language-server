@@ -40,7 +40,7 @@ import org.sonarsource.sonarlint.ls.LocalCodeFile;
 
 public final class ShowAllLocationsCommand {
 
-  public static final String ID = "SonarLint.ShowAllLocations";
+  public static final String ID = "CodeScan.ShowAllLocations";
 
   private ShowAllLocationsCommand() {
     // NOP

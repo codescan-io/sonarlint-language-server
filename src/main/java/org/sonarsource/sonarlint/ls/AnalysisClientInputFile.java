@@ -118,8 +118,12 @@ public class AnalysisClientInputFile implements ClientInputFile {
       case "apex-anon":
         // See https://github.com/forcedotcom/salesforcedx-vscode/blob/5e4b7715d1cb3d1ee2780780ed63f70f58e93b20/packages/salesforcedx-vscode-apex/package.json#L273
         return Language.APEX;
+      case "visualforce":
+        return Language.VF;
+      case "xml":
+        return Language.SF_META;
       default:
-        // Other supported languages map to the same key as the one used in SonarQube/SonarCloud
+        // Other supported languages map to the same key as the one used in CodeScan
         return Language.forKey(clientLanguageId).orElse(null);
     }
   }

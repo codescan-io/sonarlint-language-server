@@ -57,7 +57,7 @@ public class ProgressManager {
     if (workDoneToken == null && !workDoneProgressSupportedByClient) {
       runnableWithProgress.accept(new NoOpProgressFacade());
     } else {
-      Either<String, Integer> progressToken = workDoneToken != null ? workDoneToken : Either.forLeft("SonarLint" + ThreadLocalRandom.current().nextInt());
+      Either<String, Integer> progressToken = workDoneToken != null ? workDoneToken : Either.forLeft("CodeScan" + ThreadLocalRandom.current().nextInt());
       if (workDoneToken == null) {
         try {
           client.createProgress(new WorkDoneProgressCreateParams(progressToken)).get();

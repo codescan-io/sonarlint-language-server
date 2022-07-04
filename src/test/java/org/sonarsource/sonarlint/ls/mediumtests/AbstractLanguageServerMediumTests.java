@@ -154,11 +154,11 @@ public abstract class AbstractLanguageServerMediumTests {
     initializeParams.setTrace("messages");
     initializeParams.setInitializationOptions(initializeOptions);
     initializeParams.setWorkspaceFolders(List.of(initFolders));
-    initializeParams.setClientInfo(new ClientInfo("SonarLint LS Medium tests", "1.0"));
+    initializeParams.setClientInfo(new ClientInfo("CodeScan LS Medium tests", "1.0"));
     initializeParams.setCapabilities(new ClientCapabilities());
     initializeParams.getCapabilities().setWindow(new WindowClientCapabilities());
     var initializeResult = lsProxy.initialize(initializeParams).get();
-    assertThat(initializeResult.getServerInfo().getName()).isEqualTo("SonarLint Language Server");
+    assertThat(initializeResult.getServerInfo().getName()).isEqualTo("CodeScan Language Server");
     assertThat(initializeResult.getServerInfo().getVersion()).isNotBlank();
     lsProxy.initialized(new InitializedParams());
   }
@@ -290,7 +290,7 @@ public abstract class AbstractLanguageServerMediumTests {
       return CompletableFutures.computeAsync(cancelToken -> {
         List<Object> result;
         try {
-          assertThat(configurationParams.getItems()).extracting(ConfigurationItem::getSection).containsExactly("sonarlint");
+          assertThat(configurationParams.getItems()).extracting(ConfigurationItem::getSection).containsExactly("codescan");
           result = new ArrayList<>(configurationParams.getItems().size());
           for (var item : configurationParams.getItems()) {
             if (item.getScopeUri() == null) {
@@ -396,7 +396,7 @@ public abstract class AbstractLanguageServerMediumTests {
   private static DidChangeConfigurationParams changedConfiguration(@Nullable String testFilePattern, @Nullable Boolean disableTelemetry, @Nullable Boolean showAnalyzerLogs,
     @Nullable Boolean showVerboseLogs, String... ruleConfigs) {
     var values = buildSonarLintSettingsSection(testFilePattern, disableTelemetry, showAnalyzerLogs, showVerboseLogs, ruleConfigs);
-    return new DidChangeConfigurationParams(Map.of("sonarlint", values));
+    return new DidChangeConfigurationParams(Map.of("codescan", values));
   }
 
   protected static Map<String, Object> buildSonarLintSettingsSection(@Nullable String testFilePattern, @Nullable Boolean disableTelemetry, @Nullable Boolean showAnalyzerLogs,
