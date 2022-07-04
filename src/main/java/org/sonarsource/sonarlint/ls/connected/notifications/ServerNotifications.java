@@ -164,7 +164,7 @@ public class ServerNotifications implements WorkspaceSettingsChangeListener, Wor
     public void handle(ServerNotification serverNotification) {
       final var category = serverNotification.category();
       telemetry.devNotificationsReceived(category);
-      final var label = isSonarCloud ? "SonarCloud" : "SonarQube";
+      final var label = isSonarCloud ? "SonarCloud" : "CodeScan";
       var params = new ShowMessageRequestParams();
       params.setType(MessageType.Info);
       params.setMessage(String.format("%s Notification: %s", label, serverNotification.message()));

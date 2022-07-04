@@ -385,7 +385,7 @@ class LanguageServerMediumTests extends AbstractLanguageServerMediumTests {
   @Test
   void test_command_open_standalone_rule_desc_with_unknown_diagnostic_rule() throws Exception {
     try {
-      lsProxy.getWorkspaceService().executeCommand(new ExecuteCommandParams("SonarLint.OpenStandaloneRuleDesc", List.of("unknown:rule"))).get();
+      lsProxy.getWorkspaceService().executeCommand(new ExecuteCommandParams("CodeScan.OpenStandaloneRuleDesc", List.of("unknown:rule"))).get();
       fail("Expected exception");
     } catch (Exception e) {
       assertThat(e).isInstanceOf(ExecutionException.class).hasCauseInstanceOf(ResponseErrorException.class);
@@ -397,7 +397,7 @@ class LanguageServerMediumTests extends AbstractLanguageServerMediumTests {
   @Test
   void test_command_open_standalone_rule_desc() throws Exception {
     client.showRuleDescriptionLatch = new CountDownLatch(1);
-    lsProxy.getWorkspaceService().executeCommand(new ExecuteCommandParams("SonarLint.OpenStandaloneRuleDesc", List.of("javascript:S930"))).get();
+    lsProxy.getWorkspaceService().executeCommand(new ExecuteCommandParams("CodeScan.OpenStandaloneRuleDesc", List.of("javascript:S930"))).get();
     assertTrue(client.showRuleDescriptionLatch.await(1, TimeUnit.MINUTES));
 
     assertThat(client.ruleDesc.getKey()).isEqualTo("javascript:S930");
@@ -411,7 +411,7 @@ class LanguageServerMediumTests extends AbstractLanguageServerMediumTests {
   @Test
   void test_command_open_standalone_rule_desc_with_params() throws Exception {
     client.showRuleDescriptionLatch = new CountDownLatch(1);
-    lsProxy.getWorkspaceService().executeCommand(new ExecuteCommandParams("SonarLint.OpenStandaloneRuleDesc", List.of("javascript:S103"))).get();
+    lsProxy.getWorkspaceService().executeCommand(new ExecuteCommandParams("CodeScan.OpenStandaloneRuleDesc", List.of("javascript:S103"))).get();
     assertTrue(client.showRuleDescriptionLatch.await(1, TimeUnit.MINUTES));
 
     assertThat(client.ruleDesc.getKey()).isEqualTo("javascript:S103");
@@ -428,7 +428,7 @@ class LanguageServerMediumTests extends AbstractLanguageServerMediumTests {
   @Test
   void test_command_open_rule_desc_from_code_action() throws Exception {
     client.showRuleDescriptionLatch = new CountDownLatch(1);
-    lsProxy.getWorkspaceService().executeCommand(new ExecuteCommandParams("SonarLint.OpenRuleDescCodeAction", List.of("javascript:S930", "file://foo.js"))).get();
+    lsProxy.getWorkspaceService().executeCommand(new ExecuteCommandParams("CodeScan.OpenRuleDescCodeAction", List.of("javascript:S930", "file://foo.js"))).get();
     assertTrue(client.showRuleDescriptionLatch.await(1, TimeUnit.MINUTES));
 
     assertThat(client.ruleDesc.getKey()).isEqualTo("javascript:S930");
@@ -449,16 +449,16 @@ class LanguageServerMediumTests extends AbstractLanguageServerMediumTests {
     var list = lsProxy.getTextDocumentService().codeAction(codeActionParams).get();
     assertThat(list).hasSize(2);
     var codeAction = list.get(0).getRight();
-    assertThat(codeAction.getTitle()).isEqualTo("SonarLint: Open description of rule 'javascript:S930'");
+    assertThat(codeAction.getTitle()).isEqualTo("CodeScan: Open description of rule 'javascript:S930'");
     var openRuleDesc = codeAction.getCommand();
-    assertThat(openRuleDesc.getCommand()).isEqualTo("SonarLint.OpenRuleDescCodeAction");
+    assertThat(openRuleDesc.getCommand()).isEqualTo("CodeScan.OpenRuleDescCodeAction");
     assertThat(openRuleDesc.getArguments()).hasSize(2);
     assertThat(((JsonPrimitive) openRuleDesc.getArguments().get(0)).getAsString()).isEqualTo("javascript:S930");
     assertThat(((JsonPrimitive) openRuleDesc.getArguments().get(1)).getAsString()).isEqualTo("file://foo.js");
     var disableRuleCodeAction = list.get(1).getRight();
-    assertThat(disableRuleCodeAction.getTitle()).isEqualTo("SonarLint: Deactivate rule 'javascript:S930'");
+    assertThat(disableRuleCodeAction.getTitle()).isEqualTo("CodeScan: Deactivate rule 'javascript:S930'");
     var disableRule = disableRuleCodeAction.getCommand();
-    assertThat(disableRule.getCommand()).isEqualTo("SonarLint.DeactivateRule");
+    assertThat(disableRule.getCommand()).isEqualTo("CodeScan.DeactivateRule");
     assertThat(disableRule.getArguments()).hasSize(1);
     assertThat(((JsonPrimitive) disableRule.getArguments().get(0)).getAsString()).isEqualTo("javascript:S930");
   }

@@ -62,7 +62,7 @@ public class SonarLintTelemetry implements WorkspaceSettingsChangeListener {
 
   public SonarLintTelemetry(ApacheHttpClient httpClient, SettingsManager settingsManager, ProjectBindingManager bindingManager, NodeJsRuntime nodeJsRuntime,
     StandaloneEngineManager standaloneEngineManager) {
-    this(() -> Executors.newScheduledThreadPool(1, Utils.threadFactory("SonarLint Telemetry", false)), httpClient, settingsManager, bindingManager, nodeJsRuntime,
+    this(() -> Executors.newScheduledThreadPool(1, Utils.threadFactory("CodeScan Telemetry", false)), httpClient, settingsManager, bindingManager, nodeJsRuntime,
       standaloneEngineManager);
   }
 

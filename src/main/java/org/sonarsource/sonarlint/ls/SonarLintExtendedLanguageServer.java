@@ -32,7 +32,7 @@ import org.eclipse.lsp4j.services.LanguageServer;
 
 public interface SonarLintExtendedLanguageServer extends LanguageServer {
 
-  @JsonRequest("sonarlint/listAllRules")
+  @JsonRequest("codescan/listAllRules")
   CompletableFuture<Map<String, List<Rule>>> listAllRules();
 
   /**
@@ -65,7 +65,7 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     VERBOSE
   }
 
-  @JsonNotification("sonarlint/didClasspathUpdate")
+  @JsonNotification("codescan/didClasspathUpdate")
   void didClasspathUpdate(String projectUri);
 
   /**
@@ -91,7 +91,7 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
-  @JsonNotification("sonarlint/didJavaServerModeChange")
+  @JsonNotification("codescan/didJavaServerModeChange")
   void didJavaServerModeChange(String serverMode);
 
   class LocalBranchNameChangeEvent {
@@ -122,6 +122,6 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
-  @JsonNotification("sonarlint/didLocalBranchNameChange")
+  @JsonNotification("codescan/didLocalBranchNameChange")
   void didLocalBranchNameChange(LocalBranchNameChangeEvent event);
 }

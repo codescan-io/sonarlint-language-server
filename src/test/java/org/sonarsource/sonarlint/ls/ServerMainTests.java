@@ -103,13 +103,6 @@ class ServerMainTests {
   }
 
   @Test
-  void testExtractingAnalyzersExitsIfNoKey() {
-    var args = new String[]{"http://url1.jar", "http://url2.jar"};
-
-    assertThrows(RuntimeException.class, ()-> underTest.extractAnalyzers(args));
-  }
-
-  @Test
   void testExtractingAnalyzersExitsOnMalformedUrl() {
     var args = new String[]{"-analyzers", "url1"};
 

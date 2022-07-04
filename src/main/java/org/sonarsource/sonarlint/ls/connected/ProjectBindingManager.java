@@ -245,7 +245,7 @@ public class ProjectBindingManager implements WorkspaceSettingsChangeListener, W
   @CheckForNull
   private ConnectedSonarLintEngine createConnectedEngineAndUpdateIfNeeded(String connectionId, EndpointParamsAndHttpClient endpointParamsAndHttpClient, boolean autoUpdate,
     ProgressFacade progress) {
-    LOG.debug("Starting connected SonarLint engine for '{}'...", connectionId);
+    LOG.debug("Starting connected CodeScan engine for '{}'...", connectionId);
 
     ConnectedSonarLintEngine engine;
     try {
@@ -254,7 +254,7 @@ public class ProjectBindingManager implements WorkspaceSettingsChangeListener, W
         return engine;
       }
     } catch (Exception e) {
-      LOG.error("Error starting connected SonarLint engine for '" + connectionId + "'", e);
+      LOG.error("Error starting connected CodeScan engine for '" + connectionId + "'", e);
       return null;
     }
     var failedServerIds = new ArrayList<String>();
@@ -264,10 +264,10 @@ public class ProjectBindingManager implements WorkspaceSettingsChangeListener, W
         updateGlobalStorageAndLogResults(endpointParamsAndHttpClient, engine, failedServerIds, connectionId, progress);
       }
     } catch (Exception e) {
-      LOG.error("Error updating storage of the connected SonarLint engine '" + connectionId + "'", e);
+      LOG.error("Error updating storage of the connected CodeScan engine '" + connectionId + "'", e);
     }
     if (!failedServerIds.isEmpty()) {
-      client.showMessage(new MessageParams(MessageType.Error, "Binding update failed for the server: " + connectionId + ". Look to the SonarLint output for details."));
+      client.showMessage(new MessageParams(MessageType.Error, "Binding update failed for the server: " + connectionId + ". Look to the CodeScan output for details."));
       return null;
     }
     return engine;
@@ -431,11 +431,11 @@ public class ProjectBindingManager implements WorkspaceSettingsChangeListener, W
 
   private void showOperationResult(Set<String> failedConnectionIds) {
     if (failedConnectionIds.isEmpty()) {
-      client.showMessage(new MessageParams(MessageType.Info, "All SonarLint bindings succesfully updated"));
+      client.showMessage(new MessageParams(MessageType.Info, "All CodeScan bindings succesfully updated"));
     } else {
       var connections = String.join(", ", failedConnectionIds);
       client.showMessage(
-        new MessageParams(MessageType.Error, "Binding update failed for the following connection(s): " + connections + ". Look at the SonarLint output for details."));
+        new MessageParams(MessageType.Error, "Binding update failed for the following connection(s): " + connections + ". Look at the CodeScan output for details."));
     }
   }
 

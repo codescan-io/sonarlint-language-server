@@ -61,7 +61,7 @@ import org.sonarsource.sonarlint.ls.settings.ServerConnectionSettings;
 
 public class SecurityHotspotsHandlerServer {
 
-  static final int STARTING_PORT = 64120;
+  static final int STARTING_PORT = 64101;
   static final int ENDING_PORT = 64130;
 
   private static final int INVALID_PORT = -1;
@@ -242,7 +242,7 @@ public class SecurityHotspotsHandlerServer {
 
     void showUnknownServer(String url) {
       var params = new ShowMessageRequestParams();
-      params.setMessage("No SonarQube connection settings found for URL " + url);
+      params.setMessage("No CodeScan connection settings found for URL " + url);
       params.setType(MessageType.Error);
       var showSettingsAction = new MessageActionItem("Open Settings");
       params.setActions(List.of(showSettingsAction));

@@ -34,31 +34,31 @@ import org.sonarsource.sonarlint.ls.commands.ShowAllLocationsCommand;
 
 public interface SonarLintExtendedLanguageClient extends LanguageClient {
 
-  @JsonRequest("sonarlint/showSonarLintOutput")
+  @JsonRequest("codescan/showCodeScanOutput")
   CompletableFuture<Void> showSonarLintOutput();
 
-  @JsonRequest("sonarlint/openJavaHomeSettings")
+  @JsonRequest("codescan/openJavaHomeSettings")
   CompletableFuture<Void> openJavaHomeSettings();
 
-  @JsonRequest("sonarlint/openPathToNodeSettings")
+  @JsonRequest("codescan/openPathToNodeSettings")
   CompletableFuture<Void> openPathToNodeSettings();
 
-  @JsonRequest("sonarlint/openConnectionSettings")
+  @JsonRequest("codescan/openConnectionSettings")
   CompletableFuture<Void> openConnectionSettings(boolean isSonarCloud);
 
-  @JsonRequest("sonarlint/showRuleDescription")
+  @JsonRequest("codescan/showRuleDescription")
   CompletableFuture<Void> showRuleDescription(ShowRuleDescriptionParams params);
 
-  @JsonRequest("sonarlint/showHotspot")
+  @JsonRequest("codescan/showHotspot")
   CompletableFuture<Void> showHotspot(ServerHotspot hotspot);
 
-  @JsonRequest("sonarlint/showTaintVulnerability")
+  @JsonRequest("codescan/showTaintVulnerability")
   CompletableFuture<Void> showTaintVulnerability(ShowAllLocationsCommand.Param params);
 
-  @JsonRequest("sonarlint/isIgnoredByScm")
+  @JsonRequest("codescan/isIgnoredByScm")
   CompletableFuture<Boolean> isIgnoredByScm(String fileUri);
 
-  @JsonRequest("sonarlint/showNotificationForFirstSecretsIssue")
+  @JsonRequest("codescan/showNotificationForFirstSecretsIssue")
   CompletableFuture<Void> showFirstSecretDetectionNotification();
 
   class ShowRuleDescriptionParams {
@@ -183,7 +183,7 @@ public interface SonarLintExtendedLanguageClient extends LanguageClient {
    * Fetch java configuration for a given file.
    * See: https://github.com/redhat-developer/vscode-java/commit/e29f6df2db016c514afd8d2b69462ad2ef1de867
    */
-  @JsonRequest("sonarlint/getJavaConfig")
+  @JsonRequest("codescan/getJavaConfig")
   CompletableFuture<GetJavaConfigResponse> getJavaConfig(String fileUri);
 
   class GetJavaConfigResponse {
@@ -237,10 +237,10 @@ public interface SonarLintExtendedLanguageClient extends LanguageClient {
 
   }
 
-  @JsonRequest("sonarlint/browseTo")
+  @JsonRequest("codescan/browseTo")
   CompletableFuture<Void> browseTo(String link);
 
-  @JsonRequest("sonarlint/getBranchNameForFolder")
+  @JsonRequest("codescan/getBranchNameForFolder")
   CompletableFuture<String> getBranchNameForFolder(String folderUri);
 
   class ReferenceBranchForFolder {
@@ -284,6 +284,6 @@ public interface SonarLintExtendedLanguageClient extends LanguageClient {
     }
   }
 
-  @JsonRequest("sonarlint/setReferenceBranchNameForFolder")
+  @JsonRequest("codescan/setReferenceBranchNameForFolder")
   CompletableFuture<Void> setReferenceBranchNameForFolder(ReferenceBranchForFolder newReferenceBranch);
 }

@@ -140,7 +140,7 @@ class CommandManagerTests {
   @Test
   void noCodeActionsIfNotSonarLintDiagnostic() {
     var codeActions = underTest.computeCodeActions(new CodeActionParams(FAKE_TEXT_DOCUMENT, FAKE_RANGE,
-      new CodeActionContext(List.of(new Diagnostic(FAKE_RANGE, "Foo", DiagnosticSeverity.Error, "not_sonarlint", "XYZ")))), NOP_CANCEL_TOKEN);
+      new CodeActionContext(List.of(new Diagnostic(FAKE_RANGE, "Foo", DiagnosticSeverity.Error, "not_codescan", "XYZ")))), NOP_CANCEL_TOKEN);
 
     assertThat(codeActions).isEmpty();
   }
@@ -152,7 +152,7 @@ class CommandManagerTests {
     var codeActions = underTest.computeCodeActions(new CodeActionParams(FAKE_TEXT_DOCUMENT, FAKE_RANGE,
       new CodeActionContext(List.of(new Diagnostic(FAKE_RANGE, "Foo", DiagnosticSeverity.Error, SONARLINT_SOURCE, "XYZ")))), NOP_CANCEL_TOKEN);
 
-    assertThat(codeActions).extracting(c -> c.getRight().getTitle()).containsOnly("SonarLint: Open description of rule 'XYZ'");
+    assertThat(codeActions).extracting(c -> c.getRight().getTitle()).containsOnly("CodeScan: Open description of rule 'XYZ'");
   }
 
   @Test
@@ -169,8 +169,8 @@ class CommandManagerTests {
 
     assertThat(codeActions).extracting(c -> c.getRight().getTitle())
       .containsOnly(
-        "SonarLint: Open description of rule 'XYZ'",
-        "SonarLint: Deactivate rule 'XYZ'"
+        "CodeScan: Open description of rule 'XYZ'",
+        "CodeScan: Deactivate rule 'XYZ'"
       );
   }
 
@@ -202,9 +202,9 @@ class CommandManagerTests {
 
     assertThat(codeActions).extracting(c -> c.getRight().getTitle())
       .containsExactly(
-        "SonarLint: Fix the issue!",
-        "SonarLint: Open description of rule 'XYZ'",
-        "SonarLint: Deactivate rule 'XYZ'"
+        "CodeScan: Fix the issue!",
+        "CodeScan: Open description of rule 'XYZ'",
+        "CodeScan: Deactivate rule 'XYZ'"
       );
   }
 
@@ -235,9 +235,9 @@ class CommandManagerTests {
       new CodeActionContext(List.of(d))), NOP_CANCEL_TOKEN);
 
     assertThat(codeActions).extracting(c -> c.getRight().getTitle()).containsOnly(
-      "SonarLint: Open description of rule 'ruleKey'",
-      "SonarLint: Show all locations for taint vulnerability 'ruleKey'",
-      "SonarLint: Open taint vulnerability 'ruleKey' on 'connectionId'"
+      "CodeScan: Open description of rule 'ruleKey'",
+      "CodeScan: Show all locations for taint vulnerability 'ruleKey'",
+      "CodeScan: Open taint vulnerability 'ruleKey' on 'connectionId'"
     );
   }
 
@@ -258,9 +258,9 @@ class CommandManagerTests {
 
     assertThat(codeActions).extracting(c -> c.getRight().getTitle())
       .containsOnly(
-        "SonarLint: Open description of rule 'XYZ'",
-        "SonarLint: Deactivate rule 'XYZ'",
-        "SonarLint: Show all locations for issue 'XYZ'"
+        "CodeScan: Open description of rule 'XYZ'",
+        "CodeScan: Deactivate rule 'XYZ'",
+        "CodeScan: Show all locations for issue 'XYZ'"
       );
   }
 

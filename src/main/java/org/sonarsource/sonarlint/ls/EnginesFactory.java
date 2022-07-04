@@ -56,12 +56,16 @@ public class EnginesFactory {
     Language.PHP,
     Language.PYTHON,
     Language.SECRETS,
-    Language.TS
+    Language.TS,
+    Language.KOTLIN,
+    Language.XML
   };
 
   private static final Language[] CONNECTED_ADDITIONAL_LANGUAGES = {
     Language.APEX,
-    Language.PLSQL
+    Language.PLSQL,
+    Language.VF,
+    Language.SF_META
   };
 
   private final NodeJsRuntime nodeJsRuntime;
@@ -78,7 +82,7 @@ public class EnginesFactory {
   }
 
   public StandaloneSonarLintEngine createStandaloneEngine() {
-    LOG.debug("Starting standalone SonarLint engine...");
+    LOG.debug("Starting standalone CodeScan engine...");
     LOG.debug("Using {} analyzers", standaloneAnalyzers.size());
 
     try {
@@ -93,10 +97,10 @@ public class EnginesFactory {
         .build();
 
       var engine = newStandaloneEngine(configuration);
-      LOG.debug("Standalone SonarLint engine started");
+      LOG.debug("Standalone CodeScan engine started");
       return engine;
     } catch (Exception e) {
-      LOG.error("Error starting standalone SonarLint engine", e);
+      LOG.error("Error starting standalone CodeScan engine", e);
       throw new IllegalStateException(e);
     }
   }
@@ -118,7 +122,7 @@ public class EnginesFactory {
     extraAnalyzers.forEach(analyzer-> builder.addExtraPlugin(guessPluginKey(analyzer.getPath()), analyzer));
     var engine = newConnectedEngine(builder.build());
 
-    LOG.debug("SonarLint engine started for connection '{}'", connectionId);
+    LOG.debug("CodeScan engine started for connection '{}'", connectionId);
     return engine;
   }
 

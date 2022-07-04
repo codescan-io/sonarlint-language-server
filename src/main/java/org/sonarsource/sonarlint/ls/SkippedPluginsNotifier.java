@@ -54,7 +54,7 @@ public class SkippedPluginsNotifier {
       correspondingPlugin.flatMap(PluginDetails::skipReason).ifPresent(skipReason -> {
         if (skipReason instanceof SkipReason.UnsatisfiedRuntimeRequirement) {
           final var runtimeRequirement = (SkipReason.UnsatisfiedRuntimeRequirement) skipReason;
-          final var title = String.format("SonarLint failed to analyze %s code", l.getLabel());
+          final var title = String.format("CodeScan failed to analyze %s code", l.getLabel());
           if (runtimeRequirement.getRuntime() == SkipReason.UnsatisfiedRuntimeRequirement.RuntimeRequirement.JRE) {
             var content = String.format(
               "Java runtime version %s or later is required. Current version is %s.",runtimeRequirement.getMinVersion(), runtimeRequirement.getCurrentVersion()

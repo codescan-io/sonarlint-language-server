@@ -44,7 +44,7 @@ import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
  */
 public class LanguageClientLogOutput implements LogOutput, WorkspaceSettingsChangeListener {
 
-  static final String SHOW_SONARLINT_OUTPUT_ACTION = "Show SonarLint Output";
+  static final String SHOW_SONARLINT_OUTPUT_ACTION = "Show CodeScan Output";
   static final String NODE_COMMAND_EXCEPTION = "NodeCommandException";
   private static final DateTimeFormatter LOG_DATE_FORMAT = new DateTimeFormatterBuilder()
     .appendValue(HOUR_OF_DAY, 2)
@@ -93,7 +93,7 @@ public class LanguageClientLogOutput implements LogOutput, WorkspaceSettingsChan
     var actionItem = new MessageActionItem(SHOW_SONARLINT_OUTPUT_ACTION);
     var params = new ShowMessageRequestParams(List.of(actionItem));
     params.setType(MessageType.Error);
-    params.setMessage("JS/TS analysis failed. Please check the SonarLint Output for more details.");
+    params.setMessage("JS/TS analysis failed. Please check the CodeScan Output for more details.");
     return params;
   }
 

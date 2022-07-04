@@ -66,7 +66,7 @@ class JavaMediumTests extends AbstractLanguageServerMediumTests {
     await().atMost(5, SECONDS).untilAsserted(() -> assertThat(client.logs)
       .extracting(withoutTimestamp())
       .contains(
-        "[Debug] Skipping analysis of Java file '" + uri + "' because SonarLint was unable to query project configuration (classpath, source level, ...)"));
+        "[Debug] Skipping analysis of Java file '" + uri + "' because CodeScan was unable to query project configuration (classpath, source level, ...)"));
   }
 
   @Test
@@ -261,7 +261,7 @@ class JavaMediumTests extends AbstractLanguageServerMediumTests {
     await().atMost(5, SECONDS).untilAsserted(() -> assertThat(client.logs)
       .extracting(withoutTimestamp())
       .contains(
-        "[Debug] Skipping analysis of Java file '" + uri + "' because SonarLint was unable to query project configuration (classpath, source level, ...)"));
+        "[Debug] Skipping analysis of Java file '" + uri + "' because CodeScan was unable to query project configuration (classpath, source level, ...)"));
 
     // Prepare config response
     var javaConfigResponse = new GetJavaConfigResponse();

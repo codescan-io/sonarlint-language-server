@@ -83,7 +83,7 @@ class SkippedPluginsNotifierTest {
     verifyNoMoreInteractions(languageClient);
 
     var message = messageCaptor.getValue();
-    assertThat(message.getMessage()).contains("SonarLint failed to analyze Java code")
+    assertThat(message.getMessage()).contains("CodeScan failed to analyze Java code")
       .contains("Java runtime version minJavaVersion or later is required. Current version is currentJavaVersion.");
     assertThat(message.getActions()).containsExactly(SkippedPluginsNotifier.ACTION_OPEN_SETTINGS);
   }
@@ -104,7 +104,7 @@ class SkippedPluginsNotifierTest {
     verifyNoMoreInteractions(languageClient);
 
     var message = messageCaptor.getValue();
-    assertThat(message.getMessage()).contains("SonarLint failed to analyze Java code")
+    assertThat(message.getMessage()).contains("CodeScan failed to analyze Java code")
       .contains("Java runtime version minJavaVersion or later is required. Current version is currentJavaVersion.");
     assertThat(message.getActions()).containsExactly(SkippedPluginsNotifier.ACTION_OPEN_SETTINGS);
   }
@@ -126,7 +126,7 @@ class SkippedPluginsNotifierTest {
     verifyNoMoreInteractions(languageClient);
 
     var message = messageCaptor.getValue();
-    assertThat(message.getMessage()).contains("SonarLint failed to analyze JavaScript code")
+    assertThat(message.getMessage()).contains("CodeScan failed to analyze JavaScript code")
       .contains("Node.js runtime version minNodeJsVersion or later is required. Current version is currentNodeJsVersion.");
     assertThat(message.getActions()).containsExactly(SkippedPluginsNotifier.ACTION_OPEN_SETTINGS);
   }
@@ -147,7 +147,7 @@ class SkippedPluginsNotifierTest {
     verifyNoMoreInteractions(languageClient);
 
     var message = messageCaptor.getValue();
-    assertThat(message.getMessage()).contains("SonarLint failed to analyze JavaScript code")
+    assertThat(message.getMessage()).contains("CodeScan failed to analyze JavaScript code")
       .contains("Node.js runtime version minNodeJsVersion or later is required.")
       .doesNotContain("Current version is");
     assertThat(message.getActions()).containsExactly(SkippedPluginsNotifier.ACTION_OPEN_SETTINGS);

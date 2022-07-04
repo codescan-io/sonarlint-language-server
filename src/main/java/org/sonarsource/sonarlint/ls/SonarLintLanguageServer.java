@@ -67,7 +67,6 @@ import org.eclipse.lsp4j.services.WorkspaceService;
 import org.sonar.api.utils.log.Loggers;
 import org.sonarsource.sonarlint.ls.connected.ProjectBindingManager;
 import org.sonarsource.sonarlint.ls.connected.SecurityHotspotsHandlerServer;
-import org.sonarsource.sonarlint.ls.connected.notifications.ServerNotifications;
 import org.sonarsource.sonarlint.ls.file.FileLanguageCache;
 import org.sonarsource.sonarlint.ls.file.FileTypeClassifier;
 import org.sonarsource.sonarlint.ls.folders.WorkspaceFolderBranchManager;
@@ -94,7 +93,6 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
   private final WorkspaceFoldersManager workspaceFoldersManager;
   private final SettingsManager settingsManager;
   private final ProjectBindingManager bindingManager;
-  private final ServerNotifications serverNotifications;
   private final AnalysisManager analysisManager;
   private final NodeJsRuntime nodeJsRuntime;
   private final EnginesFactory enginesFactory;
@@ -108,12 +106,12 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
   private final FileLanguageCache fileLanguageCache = new FileLanguageCache();
 
   /**
-   * Keep track of value 'sonarlint.trace.server' on client side. Not used currently, but keeping it just in case.
+   * Keep track of value 'codescan.trace.server' on client side. Not used currently, but keeping it just in case.
    */
   private TraceValues traceLevel;
 
   SonarLintLanguageServer(InputStream inputStream, OutputStream outputStream, Collection<URL> analyzers, Collection<URL> extraAnalyzers) {
-    this.threadPool = Executors.newCachedThreadPool(Utils.threadFactory("SonarLint LSP message processor", false));
+    this.threadPool = Executors.newCachedThreadPool(Utils.threadFactory("CodeScan LSP message processor", false));
     var launcher = new Launcher.Builder<SonarLintExtendedLanguageClient>()
       .setLocalService(this)
       .setRemoteInterface(SonarLintExtendedLanguageClient.class)
@@ -142,9 +140,6 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
     this.settingsManager.addListener((WorkspaceSettingsChangeListener) bindingManager);
     this.settingsManager.addListener((WorkspaceFolderSettingsChangeListener) bindingManager);
     this.workspaceFoldersManager.addListener(settingsManager);
-    this.serverNotifications = new ServerNotifications(client, workspaceFoldersManager, telemetry, lsLogOutput);
-    this.settingsManager.addListener((WorkspaceSettingsChangeListener) serverNotifications);
-    this.settingsManager.addListener((WorkspaceFolderSettingsChangeListener) serverNotifications);
     this.analysisManager = new AnalysisManager(lsLogOutput, standaloneEngineManager, client, telemetry, workspaceFoldersManager, settingsManager, bindingManager,
       fileTypeClassifier,
       fileLanguageCache, javaConfigCache);
@@ -204,7 +199,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
       c.setExecuteCommandProvider(executeCommandOptions);
       c.setWorkspace(getWorkspaceServerCapabilities());
 
-      var info = new ServerInfo("SonarLint Language Server", getServerVersion("slls-version.txt"));
+      var info = new ServerInfo("CodeScan Language Server", getServerVersion("slls-version.txt"));
 
       return new InitializeResult(c, info);
     });
@@ -252,7 +247,6 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
       settingsManager.shutdown();
       threadPool.shutdown();
       httpClient.close();
-      serverNotifications.shutdown();
       standaloneEngineManager.shutdown();
       return new Object();
     });

@@ -80,8 +80,7 @@ public class ServerMain {
   Collection<URL> extractAnalyzers(String[] args) {
     var indexOfAnalyzersParam = List.of(args).indexOf(ANALYZERS_KEY);
     if (indexOfAnalyzersParam == -1) {
-      err.println(USAGE);
-      exitWithError();
+      return Collections.emptyList();
     }
     var nextParam = getIndexOfNextParam(indexOfAnalyzersParam, args);
 
