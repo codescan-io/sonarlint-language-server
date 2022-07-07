@@ -195,8 +195,20 @@ public class AnalysisManager implements WorkspaceSettingsChangeListener, Workspa
     throw new IllegalArgumentException("Unknown event type: " + type);
   }
 
+  /**
+   * 'aura components' vs-code extension sets languageId as html for aura-components with file extensions ->
+   * .app .cmp .design .evt .intf .auradoc .tokens
+   * reset languageId as visualforce for these aura components
+   */
   public void didOpen(URI fileUri, String languageId, String fileContent, int version) {
     fileLanguageCache.put(fileUri, languageId);
+    if (languageId.equals("html")) {
+      for (var fileSuffix : Language.VF.getDefaultFileSuffixes()) {
+        if (fileUri.getPath().endsWith(fileSuffix)) {
+          fileLanguageCache.put(fileUri, "visualforce");
+        }
+      }
+    }
     fileContentPerFileURI.put(fileUri, fileContent);
     knownVersionPerFileURI.put(fileUri, version);
     analyzeAsync(fileUri, true);
