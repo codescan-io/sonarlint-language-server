@@ -197,7 +197,7 @@ public class AnalysisManager implements WorkspaceSettingsChangeListener, Workspa
 
   /**
    * 'aura components' vs-code extension sets languageId as html for aura-components with file extensions ->
-   * .app .cmp .design .evt .intf .auradoc .tokens
+   * .app, .cmp, .design, .evt, .intf, .auradoc or .tokens
    * reset languageId as visualforce for these aura components
    */
   public void didOpen(URI fileUri, String languageId, String fileContent, int version) {
@@ -206,6 +206,7 @@ public class AnalysisManager implements WorkspaceSettingsChangeListener, Workspa
       for (var fileSuffix : Language.VF.getDefaultFileSuffixes()) {
         if (fileUri.getPath().endsWith(fileSuffix)) {
           fileLanguageCache.put(fileUri, "visualforce");
+          break;
         }
       }
     }
