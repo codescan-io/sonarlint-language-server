@@ -154,6 +154,13 @@ public class ApacheHttpClient implements org.sonarsource.sonarlint.core.serverap
   }
 
   public static ApacheHttpClient create() {
+    String httpClientVersion = System.getProperty("codescan.httpclient.version");
+    HttpVersionPolicy httpVersionPolicy = HttpVersionPolicy.NEGOTIATE;
+    if (HttpVersionPolicy.FORCE_HTTP_1.name().equals(httpClientVersion)) {
+      httpVersionPolicy = HttpVersionPolicy.FORCE_HTTP_1;
+    } else if (HttpVersionPolicy.FORCE_HTTP_2.name().equals(httpClientVersion)) {
+      httpVersionPolicy = HttpVersionPolicy.FORCE_HTTP_2;
+    }
     var httpClient = HttpAsyncClients.custom()
       .useSystemProperties()
       .setUserAgent(USER_AGENT)
@@ -162,7 +169,7 @@ public class ApacheHttpClient implements org.sonarsource.sonarlint.core.serverap
           .setConnectionRequestTimeout(CONNECTION_TIMEOUT)
           .setResponseTimeout(RESPONSE_TIMEOUT)
           .build())
-      .setVersionPolicy(HttpVersionPolicy.FORCE_HTTP_1)
+      .setVersionPolicy(httpVersionPolicy)
       .build();
     httpClient.start();
     return new ApacheHttpClient(httpClient, null);
