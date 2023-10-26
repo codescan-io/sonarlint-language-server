@@ -111,6 +111,11 @@
       <artifactId>org.eclipse.jgit</artifactId>
       <version>6.0.0.202111291000-r</version>
     </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk</artifactId>
+      <version>1.11.990</version> <!-- Use the latest version -->
+    </dependency>
   </dependencies>
 
   <build>

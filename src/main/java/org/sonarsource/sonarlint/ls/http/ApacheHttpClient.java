@@ -19,7 +19,15 @@
  */
 package org.sonarsource.sonarlint.ls.http;
 
+import com.amazonaws.DefaultRequest;
+import com.amazonaws.Request;
+import com.amazonaws.auth.AWS4Signer;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.http.HttpMethodName;
+import io.netty.handler.codec.http.HttpMethod;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.CancellationException;
@@ -98,9 +106,39 @@ public class ApacheHttpClient implements org.sonarsource.sonarlint.core.serverap
   }
 
   private CompletableFuture<Response> executeAsync(SimpleRequestBuilder httpRequest) {
-    if (token != null) {
-      httpRequest.setHeader(HttpHeaders.AUTHORIZATION, basic(token, ""));
+    if (System.getProperty("codescan.whitelabel.product") != null && System.getProperty("codescan.whitelabel.product").equals("AWS")) {
+      String accessKey = System.getProperty("codescan.sigv4.cred.accessKey");
+      String secretKey = System.getProperty("codescan.sigv4.cred.secretKey");
+      String region = System.getProperty("codescan.sigv4.cred.awsRegion");
+      String service = System.getProperty("codescan.sigv4.cred.serviceName");
+      AWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
+
+      // Create an AWS4 signer
+      AWS4Signer signer = new AWS4Signer();
+      signer.setServiceName(service);
+      signer.setRegionName(region);
+
+      // Create a request using the SimpleRequestBuilder
+      Request<String> request = new DefaultRequest<>(service);
+      request.setEndpoint(httpRequest.getUri());
+      request.setHttpMethod(HttpMethodName.fromValue(httpRequest.getMethod()));
+      request.setResourcePath(httpRequest.getPath());
+
+      // Sign the request
+      signer.sign(request, awsCredentials);
+
+      httpRequest.setHeader(HttpHeaders.AUTHORIZATION, request.getHeaders().get("Authorization"));
+
+    } else {
+      if (token != null) {
+        httpRequest.setHeader(HttpHeaders.AUTHORIZATION, basic(token, ""));
+      }
     }
+    for (int i = 0; i < httpRequest.getHeaders().length; i++) {
+      System.out.println("Http header values:{}");
+      System.out.println("Key:"+httpRequest.getHeaders()[i].getName() + ", "+"Value:"+httpRequest.getHeaders()[i].getValue());
+    }
+
     var futureWrapper = new CompletableFutureWrapper(httpRequest);
     futureWrapper.wrapped = client.execute(httpRequest.build(), futureWrapper);
     return futureWrapper;
