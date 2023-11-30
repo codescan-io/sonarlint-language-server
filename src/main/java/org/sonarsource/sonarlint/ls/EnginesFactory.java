@@ -58,7 +58,8 @@ public class EnginesFactory {
     Language.SECRETS,
     Language.TS,
     Language.KOTLIN,
-    Language.XML
+    Language.XML,
+    Language.CSS
   };
 
   private static final Language[] CONNECTED_ADDITIONAL_LANGUAGES = {
