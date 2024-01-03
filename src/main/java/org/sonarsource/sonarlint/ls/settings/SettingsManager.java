@@ -338,10 +338,11 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
       if (checkRequiredAttribute(m, "SonarCloud", ORGANIZATION_KEY)) {
         var connectionId = defaultIfBlank((String) m.get(CONNECTION_ID), DEFAULT_CONNECTION_ID);
         var organizationKey = (String) m.get(ORGANIZATION_KEY);
+        var serverUrl = (String) m.get(SERVER_URL);
         var token = getTokenFromClient(organizationKey);
         var disableNotifs = (Boolean) m.getOrDefault(DISABLE_NOTIFICATIONS, false);
         addIfUniqueConnectionId(serverConnections, connectionId,
-          new ServerConnectionSettings(connectionId, ServerConnectionSettings.SONARCLOUD_URL, token, organizationKey, disableNotifs));
+          new ServerConnectionSettings(connectionId, serverUrl, token, organizationKey, disableNotifs));
       }
     });
   }

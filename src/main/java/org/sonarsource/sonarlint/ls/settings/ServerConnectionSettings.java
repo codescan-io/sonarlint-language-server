@@ -19,11 +19,11 @@
  */
 package org.sonarsource.sonarlint.ls.settings;
 
-import java.util.List;
 import java.util.Objects;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -31,13 +31,11 @@ import org.sonarsource.sonarlint.core.clientapi.backend.connection.common.Transi
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.common.TransientSonarQubeConnectionDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.validate.ValidateConnectionParams;
 import org.sonarsource.sonarlint.core.clientapi.common.TokenDto;
+import org.sonarsource.sonarlint.core.repository.connection.SonarCloudConnectionConfiguration;
 import org.sonarsource.sonarlint.core.serverapi.EndpointParams;
 
 @Immutable
 public class ServerConnectionSettings {
-  static final String SONARCLOUD_URL = "https://sonarcloud.io";
-  static final String[] SONARCLOUD_ALIAS = {"https://sonarqube.com", "https://www.sonarqube.com", "https://www.sonarcloud.io", SONARCLOUD_URL};
-
   private final String connectionId;
   private final String serverUrl;
   private final String token;
@@ -65,7 +63,7 @@ public class ServerConnectionSettings {
 
   private ValidateConnectionParams createValidateConnectionParams() {
     Either<TransientSonarQubeConnectionDto, TransientSonarCloudConnectionDto> connectionDto = isSonarCloudAlias() ?
-      Either.forRight(new TransientSonarCloudConnectionDto(getOrganizationKey(), Either.forLeft(new TokenDto(getToken())))) :
+      Either.forRight(new TransientSonarCloudConnectionDto(getServerUrl(), getOrganizationKey(), Either.forLeft(new TokenDto(getToken())))) :
       Either.forLeft(new TransientSonarQubeConnectionDto(getServerUrl(), Either.forLeft(new TokenDto(getToken()))));
     return new ValidateConnectionParams(connectionDto);
   }
@@ -92,7 +90,7 @@ public class ServerConnectionSettings {
   }
 
   public static boolean isSonarCloudAlias(String serverUrl) {
-    return List.of(SONARCLOUD_ALIAS).contains(serverUrl);
+    return SonarCloudConnectionConfiguration.isSonarCloudAlias(serverUrl);
   }
 
   public boolean isSmartNotificationsDisabled() {
