@@ -25,7 +25,7 @@
   <properties>
     <jdk.min.version>11</jdk.min.version>
     <sonarlint.core.version>9.2-CODESCAN</sonarlint.core.version>
-    <sonar-plugin-api.version>10.0.0.695</sonar-plugin-api.version>
+    <sonar-plugin-api-impl.version>9.9.3.79811</sonar-plugin-api-impl.version>
     <!-- Version used by Xodus -->
     <kotlin.version>1.6.10</kotlin.version>
     <!-- analyzers used for tests -->
@@ -109,18 +109,10 @@
       <version>${kotlin.version}</version>
       <scope>runtime</scope>
     </dependency>
-
-    <!-- Needed for reasons unknown or apex parser doesn't work -->
     <dependency>
-      <groupId>org.sonarsource.api.plugin</groupId>
-      <artifactId>sonar-plugin-api</artifactId>
-      <version>${sonar-plugin-api.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.sonarsource.sonarqube</groupId>
+      <artifactId>sonar-plugin-api-impl</artifactId>
+      <version>${sonar-plugin-api-impl.version}</version>
     </dependency>
 
     <!-- unit tests -->

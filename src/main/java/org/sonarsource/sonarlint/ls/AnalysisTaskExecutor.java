@@ -524,6 +524,7 @@ public class AnalysisTaskExecutor {
     configurationBuilder.setBaseDir(baseDir)
       .setModuleKey(baseDirUri)
       .putAllExtraProperties(settings.getAnalyzerProperties())
+      .putAllExtraProperties(getCodeScanProperties(settings))
       .putAllExtraProperties(javaConfigCache.configureJavaProperties(filesToAnalyze.keySet(), javaConfigs));
     var pathToCompileCommands = settings.getPathToCompileCommands();
     if (pathToCompileCommands != null) {
@@ -535,6 +536,16 @@ public class AnalysisTaskExecutor {
           fileTypeClassifier.isTest(settings, uri, openFile.isJava(), () -> ofNullable(javaConfigs.get(uri))),
           openFile.getLanguageId())));
     return configurationBuilder;
+  }
+
+  private Map<String, String> getCodeScanProperties(WorkspaceFolderSettings settings) {
+    var codescanProps = new HashMap<String, String>();
+    var serverConnectionSettings = settingsManager.getCurrentSettings()
+            .getServerConnections().get(settings.getConnectionId());
+    codescanProps.put("sonar.host.url", serverConnectionSettings.getServerUrl());
+    codescanProps.put("sonar.organization", serverConnectionSettings.getOrganizationKey());
+    codescanProps.put("sonar.login", serverConnectionSettings.getToken());
+    return codescanProps;
   }
 
   /**
