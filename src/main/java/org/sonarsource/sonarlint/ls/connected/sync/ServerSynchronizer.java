@@ -96,7 +96,7 @@ public class ServerSynchronizer {
 
   private void showOperationResult(Set<String> failedConnectionIds) {
     if (failedConnectionIds.isEmpty()) {
-      client.showMessage(new MessageParams(MessageType.Info, "All SonarLint bindings successfully updated"));
+      client.showMessage(new MessageParams(MessageType.Info, "All CodeScan bindings successfully updated"));
     } else {
       var connections = String.join(", ", failedConnectionIds);
       client.showMessage(

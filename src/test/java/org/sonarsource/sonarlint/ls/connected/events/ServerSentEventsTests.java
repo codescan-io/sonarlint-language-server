@@ -77,8 +77,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.sonarsource.sonarlint.ls.AnalysisScheduler.SONARCLOUD_TAINT_SOURCE;
-import static org.sonarsource.sonarlint.ls.AnalysisScheduler.SONARQUBE_TAINT_SOURCE;
+import static org.sonarsource.sonarlint.ls.AnalysisScheduler.CODESCAN_CLOUD_TAINT_SOURCE;
+import static org.sonarsource.sonarlint.ls.AnalysisScheduler.CODESCAN_TAINT_SOURCE;
 import static org.sonarsource.sonarlint.ls.util.Utils.textRangeWithHashFromTextRange;
 
 class ServerSentEventsTests {
@@ -162,7 +162,8 @@ class ServerSentEventsTests {
     assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1)).isNotEmpty();
     assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1).get().getRuleKey()).isEqualTo(RULE_KEY);
     assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1).get().isResolved()).isFalse();
-    assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1).get().getSource()).isEqualTo(SONARCLOUD_TAINT_SOURCE);
+    assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1).get().getSource()).isEqualTo(
+            CODESCAN_CLOUD_TAINT_SOURCE);
   }
 
   @Test
@@ -192,7 +193,8 @@ class ServerSentEventsTests {
     assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1)).isNotEmpty();
     assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY2)).isNotEmpty();
     assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY2).get().getRuleKey()).isEqualTo(RULE_KEY);
-    assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY2).get().getSource()).isEqualTo(SONARQUBE_TAINT_SOURCE);
+    assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY2).get().getSource()).isEqualTo(
+            CODESCAN_TAINT_SOURCE);
   }
 
   @Test
@@ -256,7 +258,8 @@ class ServerSentEventsTests {
     assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1).get().isResolved()).isFalse();
     assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1).get().getSeverity()).isEqualTo(NEW_ISSUE_SEVERITY);
     assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1).get().getTextRange()).isEqualTo(textRangeWithHashFromTextRange(MAIN_LOCATION.getTextRange()));
-    assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1).get().getSource()).isEqualTo(SONARQUBE_TAINT_SOURCE);
+    assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1).get().getSource()).isEqualTo(
+            CODESCAN_TAINT_SOURCE);
   }
 
   @Test
@@ -286,7 +289,8 @@ class ServerSentEventsTests {
     assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1).get().isResolved()).isTrue();
     assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1).get().getSeverity()).isEqualTo(ISSUE_SEVERITY);
     assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1).get().getTextRange()).isEqualTo(textRangeWithHashFromTextRange(MAIN_LOCATION.getTextRange()));
-    assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1).get().getSource()).isEqualTo(SONARCLOUD_TAINT_SOURCE);
+    assertThat(taintVulnerabilitiesCache.getTaintVulnerabilityByKey(ISSUE_KEY1).get().getSource()).isEqualTo(
+            CODESCAN_CLOUD_TAINT_SOURCE);
   }
 
   @Test

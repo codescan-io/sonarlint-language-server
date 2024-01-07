@@ -39,8 +39,8 @@ import org.sonarsource.sonarlint.ls.connected.domain.TaintIssue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.sonarsource.sonarlint.ls.AnalysisScheduler.SONARCLOUD_TAINT_SOURCE;
-import static org.sonarsource.sonarlint.ls.AnalysisScheduler.SONARQUBE_TAINT_SOURCE;
+import static org.sonarsource.sonarlint.ls.AnalysisScheduler.CODESCAN_CLOUD_TAINT_SOURCE;
+import static org.sonarsource.sonarlint.ls.AnalysisScheduler.CODESCAN_TAINT_SOURCE;
 import static org.sonarsource.sonarlint.ls.connected.TaintVulnerabilitiesCache.convert;
 
 class TaintVulnerabilitiesCacheTests {
@@ -49,7 +49,7 @@ class TaintVulnerabilitiesCacheTests {
   private final TaintVulnerabilitiesCache underTest = new TaintVulnerabilitiesCache();
 
   @ParameterizedTest
-  @ValueSource(strings = {SONARCLOUD_TAINT_SOURCE, SONARQUBE_TAINT_SOURCE})
+  @ValueSource(strings = {CODESCAN_CLOUD_TAINT_SOURCE, CODESCAN_TAINT_SOURCE})
   void testIssueConversion(String taintSource) {
     var issue = mock(TaintIssue.class);
     var flow = mock(ServerTaintIssue.Flow.class);

@@ -37,10 +37,10 @@ import picocli.CommandLine.Spec;
 @Command
 public class ServerMain implements Callable<Integer> {
 
-  @Parameters(index = "0", description = "The port to which sonarlint should connect to.", defaultValue = "-1")
+  @Parameters(index = "0", description = "The port to which CodeScan should connect to.", defaultValue = "-1")
   private int deprecatedJsonRpcPort;
 
-  @Option(names = "-port", description = "The port to which sonarlint should connect to.")
+  @Option(names = "-port", description = "The port to which CodeScan should connect to.")
   private Optional<Integer> jsonRpcPort;
 
   @Option(names = "-stdio", description = "The actual transport channel will be stdio")

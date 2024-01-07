@@ -91,9 +91,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.sonarsource.sonarlint.ls.AnalysisScheduler.SONARCLOUD_TAINT_SOURCE;
+import static org.sonarsource.sonarlint.ls.AnalysisScheduler.CODESCAN_CLOUD_TAINT_SOURCE;
 import static org.sonarsource.sonarlint.ls.AnalysisScheduler.SONARLINT_SOURCE;
-import static org.sonarsource.sonarlint.ls.AnalysisScheduler.SONARQUBE_TAINT_SOURCE;
+import static org.sonarsource.sonarlint.ls.AnalysisScheduler.CODESCAN_TAINT_SOURCE;
 import static org.sonarsource.sonarlint.ls.CommandManager.SONARLINT_BROWSE_TAINT_VULNERABILITY;
 import static org.sonarsource.sonarlint.ls.CommandManager.SONARLINT_OPEN_RULE_DESCRIPTION_FROM_CODE_ACTION_COMMAND;
 import static org.sonarsource.sonarlint.ls.CommandManager.SONARLINT_QUICK_FIX_APPLIED;
@@ -266,7 +266,7 @@ class CommandManagerTests {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {SONARQUBE_TAINT_SOURCE, SONARCLOUD_TAINT_SOURCE})
+  @ValueSource(strings = {CODESCAN_TAINT_SOURCE, CODESCAN_CLOUD_TAINT_SOURCE})
   void codeActionsForTaintWithContext(String taintSource) {
     var connId = "connectionId";
     when(mockBinding.getConnectionId()).thenReturn(connId);
@@ -320,7 +320,7 @@ class CommandManagerTests {
     when(mockWorkspacesettings.getServerConnections()).thenReturn(Collections.singletonMap(connId, serverSettings));
     when(mockSettingsManager.getCurrentSettings()).thenReturn(mockWorkspacesettings);
 
-    var d = new Diagnostic(FAKE_RANGE, "Foo", DiagnosticSeverity.Error, SONARCLOUD_TAINT_SOURCE, "ruleKey");
+    var d = new Diagnostic(FAKE_RANGE, "Foo", DiagnosticSeverity.Error, CODESCAN_CLOUD_TAINT_SOURCE, "ruleKey");
 
     when(mockTaintVulnerabilitiesCache.getTaintVulnerabilityForDiagnostic(any(URI.class), eq(d))).thenReturn(Optional.empty());
 

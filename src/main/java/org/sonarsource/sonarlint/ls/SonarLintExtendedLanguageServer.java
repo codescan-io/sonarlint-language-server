@@ -41,10 +41,10 @@ import org.sonarsource.sonarlint.core.clientapi.client.binding.GetBindingSuggest
 
 public interface SonarLintExtendedLanguageServer extends LanguageServer {
 
-  @JsonRequest("sonarlint/listAllRules")
+  @JsonRequest("codescan/listAllRules")
   CompletableFuture<Map<String, List<Rule>>> listAllRules();
 
-  @JsonRequest("sonarlint/checkConnection")
+  @JsonRequest("codescan/checkConnection")
   CompletableFuture<SonarLintExtendedLanguageClient.ConnectionCheckResult> checkConnection(ConnectionCheckParams connectionId);
 
   class ConnectionCheckParams {
@@ -63,7 +63,7 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
-  @JsonRequest("sonarlint/getRemoteProjectsForConnection")
+  @JsonRequest("codescan/getRemoteProjectsForConnection")
   CompletableFuture<Map<String, String>> getRemoteProjectsForConnection(GetRemoteProjectsForConnectionParams getRemoteProjectsForConnectionParams);
 
   class GetRemoteProjectsForConnectionParams {
@@ -106,7 +106,7 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
 
   }
 
-  @JsonNotification("sonarlint/didClasspathUpdate")
+  @JsonNotification("codescan/didClasspathUpdate")
   void didClasspathUpdate(DidClasspathUpdateParams params);
 
   /**
@@ -156,7 +156,7 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
 
   }
 
-  @JsonNotification("sonarlint/didJavaServerModeChange")
+  @JsonNotification("codescan/didJavaServerModeChange")
   void didJavaServerModeChange(DidJavaServerModeChangeParams params);
 
   class DidLocalBranchNameChangeParams {
@@ -187,10 +187,10 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
-  @JsonNotification("sonarlint/didLocalBranchNameChange")
+  @JsonNotification("codescan/didLocalBranchNameChange")
   void didLocalBranchNameChange(DidLocalBranchNameChangeParams params);
 
-  @JsonNotification("sonarlint/onTokenUpdate")
+  @JsonNotification("codescan/onTokenUpdate")
   void onTokenUpdate();
 
   class GetRemoteProjectsNamesParams {
@@ -219,7 +219,7 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
-  @JsonRequest("sonarlint/getRemoteProjectNames")
+  @JsonRequest("codescan/getRemoteProjectNames")
   CompletableFuture<Map<String, String>> getRemoteProjectNames(GetRemoteProjectsNamesParams params);
 
   class GenerateTokenParams {
@@ -238,7 +238,7 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
-  @JsonRequest("sonarlint/generateToken")
+  @JsonRequest("codescan/generateToken")
   CompletableFuture<HelpGenerateUserTokenResponse> generateToken(GenerateTokenParams params);
 
   class ShowHotspotLocationsParams {
@@ -258,7 +258,7 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
-  @JsonRequest("sonarlint/showHotspotLocations")
+  @JsonRequest("codescan/showHotspotLocations")
   CompletableFuture<Void> showHotspotLocations(ShowHotspotLocationsParams hotspotKey);
 
   class OpenHotspotInBrowserLsParams {
@@ -287,7 +287,7 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
-  @JsonNotification("sonarlint/openHotspotInBrowser")
+  @JsonNotification("codescan/openHotspotInBrowser")
   void openHotspotInBrowser(OpenHotspotInBrowserLsParams params);
 
   class ShowHotspotRuleDescriptionParams {
@@ -317,7 +317,7 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
-  @JsonNotification("sonarlint/showHotspotRuleDescription")
+  @JsonNotification("codescan/showHotspotRuleDescription")
   CompletableFuture<Void> showHotspotRuleDescription(ShowHotspotRuleDescriptionParams params);
 
   class HelpAndFeedbackLinkClickedNotificationParams {
@@ -332,7 +332,7 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
-  @JsonNotification("sonarlint/helpAndFeedbackLinkClicked")
+  @JsonNotification("codescan/helpAndFeedbackLinkClicked")
   CompletableFuture<Void> helpAndFeedbackLinkClicked(HelpAndFeedbackLinkClickedNotificationParams params);
 
   class ScanFolderForHotspotsParams {
@@ -354,10 +354,10 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
-  @JsonNotification("sonarlint/scanFolderForHotspots")
+  @JsonNotification("codescan/scanFolderForHotspots")
   CompletableFuture<Void> scanFolderForHotspots(ScanFolderForHotspotsParams params);
 
-  @JsonNotification("sonarlint/forgetFolderHotspots")
+  @JsonNotification("codescan/forgetFolderHotspots")
   CompletableFuture<Void> forgetFolderHotspots();
 
   class FolderUriParams {
@@ -372,10 +372,10 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
-  @JsonRequest("sonarlint/listSupportedFilePatterns")
+  @JsonRequest("codescan/listSupportedFilePatterns")
   CompletableFuture<GetSupportedFilePatternsResponse> getFilePatternsForAnalysis(FolderUriParams params);
 
-  @JsonRequest("sonarlint/getBindingSuggestion")
+  @JsonRequest("codescan/getBindingSuggestion")
   CompletableFuture<GetBindingSuggestionsResponse> getBindingSuggestion(GetBindingSuggestionParams params);
 
   class ChangeIssueStatusParams {
@@ -414,10 +414,10 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
-  @JsonNotification("sonarlint/changeIssueStatus")
+  @JsonNotification("codescan/changeIssueStatus")
   CompletableFuture<Void> changeIssueStatus(ChangeIssueStatusParams params);
 
-  @JsonNotification("sonarlint/addIssueComment")
+  @JsonNotification("codescan/addIssueComment")
   CompletableFuture<Void> addIssueComment(AddIssueCommentParams params);
 
   class CheckLocalDetectionSupportedResponse {
@@ -440,11 +440,11 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
-  @JsonRequest("sonarlint/checkLocalDetectionSupported")
+  @JsonRequest("codescan/checkLocalDetectionSupported")
   CompletableFuture<CheckLocalDetectionSupportedResponse> checkLocalDetectionSupported(FolderUriParams params);
 
 
-  @JsonRequest("sonarlint/getHotspotDetails")
+  @JsonRequest("codescan/getHotspotDetails")
   CompletableFuture<SonarLintExtendedLanguageClient.ShowRuleDescriptionParams> getHotspotDetails(
     SonarLintExtendedLanguageServer.ShowHotspotRuleDescriptionParams getHotspotDetailsParams);
 
@@ -474,7 +474,7 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
 
   }
 
-  @JsonNotification("sonarlint/changeHotspotStatus")
+  @JsonNotification("codescan/changeHotspotStatus")
   CompletableFuture<Void> changeHotspotStatus(ChangeHotspotStatusParams params);
 
   class GetAllowedHotspotStatusesParams {
@@ -501,7 +501,7 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
-  @JsonRequest("sonarlint/getAllowedHotspotStatuses")
+  @JsonRequest("codescan/getAllowedHotspotStatuses")
   CompletableFuture<GetAllowedHotspotStatusesResponse> getAllowedHotspotStatuses(GetAllowedHotspotStatusesParams params);
 
   class GetAllowedHotspotStatusesResponse {

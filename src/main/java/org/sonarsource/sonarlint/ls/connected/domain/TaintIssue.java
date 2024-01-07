@@ -55,7 +55,7 @@ public class TaintIssue extends ServerTaintIssue {
   }
 
   public static List<TaintIssue> from(List<ServerTaintIssue> serverTaintIssues, boolean isSonarCloudAlias) {
-    var source = isSonarCloudAlias ? AnalysisScheduler.SONARCLOUD_TAINT_SOURCE : AnalysisScheduler.SONARQUBE_TAINT_SOURCE;
+    var source = isSonarCloudAlias ? AnalysisScheduler.CODESCAN_CLOUD_TAINT_SOURCE : AnalysisScheduler.CODESCAN_TAINT_SOURCE;
     return serverTaintIssues
       .stream()
       .map(serverTaintIssue -> TaintIssue.from(serverTaintIssue, source))

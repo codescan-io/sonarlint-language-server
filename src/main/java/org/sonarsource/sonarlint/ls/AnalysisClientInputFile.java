@@ -125,7 +125,7 @@ public class AnalysisClientInputFile implements ClientInputFile {
       case "yaml":
         return Language.YAML;
       default:
-        // Other supported languages map to the same key as the one used in SonarQube/SonarCloud
+        // Other supported languages map to the same key as the one used in CodeScan
         return Language.forKey(clientLanguageId).orElse(null);
     }
   }

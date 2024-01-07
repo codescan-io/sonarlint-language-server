@@ -44,49 +44,49 @@ import org.sonarsource.sonarlint.ls.commands.ShowAllLocationsCommand;
 
 public interface SonarLintExtendedLanguageClient extends LanguageClient {
 
-  @JsonNotification("sonarlint/suggestBinding")
+  @JsonNotification("codescan/suggestBinding")
   void suggestBinding(SuggestBindingParams binding);
 
-  @JsonRequest("sonarlint/findFileByNamesInFolder")
+  @JsonRequest("codescan/findFileByNamesInFolder")
   CompletableFuture<FindFileByNamesInScopeResponse> findFileByNamesInFolder(FindFileByNamesInFolder params);
 
-  @JsonNotification("sonarlint/showSonarLintOutput")
+  @JsonNotification("codescan/showCodeScanOutput")
   void showSonarLintOutput();
 
-  @JsonNotification("sonarlint/openJavaHomeSettings")
+  @JsonNotification("codescan/openJavaHomeSettings")
   void openJavaHomeSettings();
 
-  @JsonNotification("sonarlint/openPathToNodeSettings")
+  @JsonNotification("codescan/openPathToNodeSettings")
   void openPathToNodeSettings();
 
-  @JsonNotification("sonarlint/openConnectionSettings")
+  @JsonNotification("codescan/openConnectionSettings")
   void openConnectionSettings(boolean isSonarCloud);
 
-  @JsonNotification("sonarlint/assistCreatingConnection")
+  @JsonNotification("codescan/assistCreatingConnection")
   void assistCreatingConnection(CreateConnectionParams params);
 
-  @JsonNotification("sonarlint/assistBinding")
+  @JsonNotification("codescan/assistBinding")
   void assistBinding(AssistBindingParams params);
 
-  @JsonNotification("sonarlint/showRuleDescription")
+  @JsonNotification("codescan/showRuleDescription")
   void showRuleDescription(ShowRuleDescriptionParams params);
 
-  @JsonNotification("sonarlint/showHotspot")
+  @JsonNotification("codescan/showHotspot")
   void showHotspot(HotspotDetailsDto hotspot);
 
-  @JsonNotification("sonarlint/showIssueOrHotspot")
+  @JsonNotification("codescan/showIssueOrHotspot")
   void showIssueOrHotspot(ShowAllLocationsCommand.Param params);
 
-  @JsonRequest("sonarlint/isIgnoredByScm")
+  @JsonRequest("codescan/isIgnoredByScm")
   CompletableFuture<Boolean> isIgnoredByScm(String fileUri);
 
-  @JsonRequest("sonarlint/isOpenInEditor")
+  @JsonRequest("codescan/isOpenInEditor")
   CompletableFuture<Boolean> isOpenInEditor(String fileUri);
 
-  @JsonNotification("sonarlint/showNotificationForFirstSecretsIssue")
+  @JsonNotification("codescan/showNotificationForFirstSecretsIssue")
   void showFirstSecretDetectionNotification();
 
-  @JsonNotification("sonarlint/showNotificationForFirstCobolIssue")
+  @JsonNotification("codescan/showNotificationForFirstCobolIssue")
   void showFirstCobolIssueDetectedNotification();
 
   class ShowRuleDescriptionParams {
@@ -441,7 +441,7 @@ public interface SonarLintExtendedLanguageClient extends LanguageClient {
    * Fetch java configuration for a given file.
    * See: https://github.com/redhat-developer/vscode-java/commit/e29f6df2db016c514afd8d2b69462ad2ef1de867
    */
-  @JsonRequest("sonarlint/getJavaConfig")
+  @JsonRequest("codescan/getJavaConfig")
   CompletableFuture<GetJavaConfigResponse> getJavaConfig(String fileUri);
 
   class GetJavaConfigResponse {
@@ -495,10 +495,10 @@ public interface SonarLintExtendedLanguageClient extends LanguageClient {
 
   }
 
-  @JsonNotification("sonarlint/browseTo")
+  @JsonNotification("codescan/browseTo")
   void browseTo(String link);
 
-  @JsonRequest("sonarlint/getBranchNameForFolder")
+  @JsonRequest("codescan/getBranchNameForFolder")
   CompletableFuture<String> getBranchNameForFolder(String folderUri);
 
   class ReferenceBranchForFolder {
@@ -542,13 +542,13 @@ public interface SonarLintExtendedLanguageClient extends LanguageClient {
     }
   }
 
-  @JsonNotification("sonarlint/setReferenceBranchNameForFolder")
+  @JsonNotification("codescan/setReferenceBranchNameForFolder")
   void setReferenceBranchNameForFolder(ReferenceBranchForFolder newReferenceBranch);
 
-  @JsonNotification("sonarlint/needCompilationDatabase")
+  @JsonNotification("codescan/needCompilationDatabase")
   void needCompilationDatabase();
 
-  @JsonNotification("sonarlint/reportConnectionCheckResult")
+  @JsonNotification("codescan/reportConnectionCheckResult")
   void reportConnectionCheckResult(ConnectionCheckResult result);
 
   class ConnectionCheckResult {
@@ -585,13 +585,13 @@ public interface SonarLintExtendedLanguageClient extends LanguageClient {
     }
   }
 
-  @JsonRequest("sonarlint/getTokenForServer")
+  @JsonRequest("codescan/getTokenForServer")
   CompletableFuture<String> getTokenForServer(String serverUrlOrOrganization);
 
-  @JsonNotification("sonarlint/publishSecurityHotspots")
+  @JsonNotification("codescan/publishSecurityHotspots")
   void publishSecurityHotspots(PublishDiagnosticsParams publishDiagnosticsParams);
 
-  @JsonNotification("sonarlint/readyForTests")
+  @JsonNotification("codescan/readyForTests")
   void readyForTests();
 
   class SslCertificateConfirmationParams {
@@ -651,6 +651,6 @@ public interface SonarLintExtendedLanguageClient extends LanguageClient {
     }
   }
 
-  @JsonRequest("sonarlint/askSslCertificateConfirmation")
+  @JsonRequest("codescan/askSslCertificateConfirmation")
   CompletableFuture<Boolean> askSslCertificateConfirmation(SslCertificateConfirmationParams params);
 }
