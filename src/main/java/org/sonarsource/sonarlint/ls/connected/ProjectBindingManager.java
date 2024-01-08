@@ -536,7 +536,7 @@ public class ProjectBindingManager implements WorkspaceSettingsChangeListener, W
     var workspaceFolder = foldersManager.findFolderForFile(fileUri);
     if (workspaceFolder.isPresent()) {
       var baseDir = workspaceFolder.get().getUri();
-      var filePath = FileUtils.toSonarQubePath(getFileRelativePath(Paths.get(baseDir), fileUri));
+      var filePath = FileUtils.toCodeScanPath(getFileRelativePath(Paths.get(baseDir), fileUri));
       Optional<ProjectBindingWrapper> folderBinding = folderBindingCache.get(baseDir);
       if (folderBinding.isPresent()) {
         ProjectBindingWrapper bindingWrapper = folderBinding.get();

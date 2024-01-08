@@ -264,7 +264,7 @@ public class AnalysisTaskExecutor {
     javaFiles.forEach((uri, openFile) -> {
       var javaConfigOpt = javaConfigCache.getOrFetch(uri);
       if (javaConfigOpt.isEmpty()) {
-        lsLogOutput.debug(format("Analysis of Java file '%s' may not show all issues because SonarLint" +
+        lsLogOutput.debug(format("Analysis of Java file '%s' may not show all issues because CodeScan" +
           " was unable to query project configuration (classpath, source level, ...)", uri));
         clearIssueCacheAndPublishEmptyDiagnostics(uri);
       } else {
@@ -301,7 +301,7 @@ public class AnalysisTaskExecutor {
 
     if (!nonExcludedFiles.isEmpty()) {
       if (task.shouldShowProgress()) {
-        progressManager.doWithProgress(String.format("SonarLint scanning %d files for hotspots", task.getFilesToAnalyze().size()), null, () -> {},
+        progressManager.doWithProgress(String.format("CodeScan scanning %d files for hotspots", task.getFilesToAnalyze().size()), null, () -> {},
           progressFacade -> analyzeSingleModuleNonExcluded(task, settings, binding, nonExcludedFiles, baseDirUri, javaConfigs, progressFacade));
       } else {
         analyzeSingleModuleNonExcluded(task, settings, binding, nonExcludedFiles, baseDirUri, javaConfigs, null);
@@ -513,7 +513,7 @@ public class AnalysisTaskExecutor {
       engine.getPluginDetails(),
       () -> filesToAnalyze.forEach((fileUri, openFile) -> {
         var issues = issuesPerFiles.getOrDefault(fileUri, List.of());
-        var filePath = FileUtils.toSonarQubePath(FileUtils.getFileRelativePath(baseDir, fileUri));
+        var filePath = FileUtils.toCodeScanPath(FileUtils.getFileRelativePath(baseDir, fileUri));
         serverIssueTracker.matchAndTrack(filePath, issues, issueListener, task.shouldFetchServerIssues());
       }));
   }

@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.codec.language.bm.Lang;
+import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.ls.log.LanguageClientLogger;
 
 import static java.lang.String.format;
@@ -40,9 +42,25 @@ public class OpenFilesCache {
     this.lsLogOutput = lsLogOutput;
   }
 
+  /**
+   * 'aura components' vs-code extension sets languageId as html for aura-components with file extensions ->
+   * .app, .cmp, .design, .evt, .intf, .auradoc or .tokens
+   * reset languageId as visualforce for these aura components
+   */
   public VersionedOpenFile didOpen(URI fileUri, String languageId, String fileContent, int version) {
     var file = new VersionedOpenFile(fileUri, languageId, version, fileContent);
     openFilesPerFileURI.put(fileUri, file);
+
+    // Detect VF files if HTML
+    if (languageId.equals("html")) {
+      for (var fileSuffix : Language.VF.getDefaultFileSuffixes()) {
+        if (fileUri.getPath().endsWith(fileSuffix)) {
+          var vfFile = new VersionedOpenFile(fileUri, "visualforce", version, fileContent);
+          openFilesPerFileURI.put(fileUri, vfFile);
+          break;
+        }
+      }
+    }
     return file;
   }
 

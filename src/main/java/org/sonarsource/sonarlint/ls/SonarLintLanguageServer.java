@@ -179,7 +179,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
   private String appName;
 
   /**
-   * Keep track of value 'sonarlint.trace.server' on client side. Not used currently, but keeping it just in case.
+   * Keep track of value 'codescan.trace.server' on client side. Not used currently, but keeping it just in case.
    */
   private TraceValue traceLevel;
 
@@ -191,7 +191,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
   private final CountDownLatch shutdownLatch;
 
   SonarLintLanguageServer(InputStream inputStream, OutputStream outputStream, Collection<Path> analyzers) {
-    this.threadPool = Executors.newCachedThreadPool(Utils.threadFactory("SonarLint LSP message processor", false));
+    this.threadPool = Executors.newCachedThreadPool(Utils.threadFactory("CodeScan LSP message processor", false));
     var input = new ExitingInputStream(inputStream, this);
     var launcher = new Launcher.Builder<SonarLintExtendedLanguageClient>()
       .setLocalService(this)
@@ -336,7 +336,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
         setNotebookSyncOptions(c);
       }
 
-      var info = new ServerInfo("SonarLint Language Server", getServerVersion("slls-version.txt"));
+      var info = new ServerInfo("CodeScan Language Server", getServerVersion("slls-version.txt"));
       provideBackendInitData(productKey, userAgent);
       return new InitializeResult(c, info);
     });

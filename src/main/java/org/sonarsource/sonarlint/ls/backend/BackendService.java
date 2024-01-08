@@ -89,7 +89,7 @@ public class BackendService {
       initializeLatch.await();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      throw new IllegalStateException("SonarLint backend initialization interrupted", e);
+      throw new IllegalStateException("CodeScan backend initialization interrupted", e);
     }
     return backend;
   }

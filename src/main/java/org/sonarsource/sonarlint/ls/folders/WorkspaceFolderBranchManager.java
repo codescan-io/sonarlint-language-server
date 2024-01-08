@@ -50,7 +50,7 @@ public class WorkspaceFolderBranchManager implements WorkspaceFolderLifecycleLis
   public WorkspaceFolderBranchManager(SonarLintExtendedLanguageClient client, ProjectBindingManager bindingManager,
     BackendServiceFacade backendServiceFacade) {
     this(client, bindingManager, backendServiceFacade,
-      Executors.newSingleThreadExecutor(Utils.threadFactory("SonarLint Language Server Branch Manager", false)));
+      Executors.newSingleThreadExecutor(Utils.threadFactory("CodeScan Language Server Branch Manager", false)));
   }
 
   WorkspaceFolderBranchManager(SonarLintExtendedLanguageClient client, ProjectBindingManager bindingManager,

@@ -48,7 +48,7 @@ public class RequestsHandlerServer {
 
   public void showHotspotHandleUnknownServer(String url) {
     var params = new ShowMessageRequestParams();
-    params.setMessage("To display Security Hotspots, you need to configure a connection to SonarQube (" + url + ") in the settings");
+    params.setMessage("To display Security Hotspots, you need to configure a connection to CodeScan (" + url + ") in the settings");
     params.setType(MessageType.Error);
     var createConnectionAction = new MessageActionItem("Create Connection");
     params.setActions(List.of(createConnectionAction));

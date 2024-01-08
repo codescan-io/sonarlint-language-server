@@ -45,7 +45,7 @@ import org.sonarsource.sonarlint.ls.settings.WorkspaceSettingsChangeListener;
 import org.sonarsource.sonarlint.ls.util.Utils;
 
 public class SonarLintTelemetry implements WorkspaceSettingsChangeListener {
-  public static final String DISABLE_PROPERTY_KEY = "sonarlint.telemetry.disabled";
+  public static final String DISABLE_PROPERTY_KEY = "codescan.telemetry.disabled";
   private static final SonarLintLogger LOG = SonarLintLogger.get();
 
   private final Supplier<ScheduledExecutorService> executorFactory;
@@ -61,7 +61,7 @@ public class SonarLintTelemetry implements WorkspaceSettingsChangeListener {
 
   public SonarLintTelemetry(SettingsManager settingsManager, ProjectBindingManager bindingManager, NodeJsRuntime nodeJsRuntime,
     BackendServiceFacade backendServiceFacade) {
-    this(() -> Executors.newScheduledThreadPool(1, Utils.threadFactory("SonarLint Telemetry", false)), settingsManager, bindingManager, nodeJsRuntime,
+    this(() -> Executors.newScheduledThreadPool(1, Utils.threadFactory("CodeScan Telemetry", false)), settingsManager, bindingManager, nodeJsRuntime,
       backendServiceFacade);
   }
 

@@ -40,7 +40,7 @@ public class SmartNotifications {
   }
 
   public void showSmartNotification(ShowSmartNotificationParams showSmartNotificationParams, boolean isSonarCloud) {
-    final var label = isSonarCloud ? "SonarCloud" : "SonarQube";
+    final var label = isSonarCloud ? "CodeScan" : "CodeScan Self-hosted";
     var params = new ShowMessageRequestParams();
     params.setType(MessageType.Info);
     params.setMessage(String.format("%s Notification: %s", label, showSmartNotificationParams.getText()));

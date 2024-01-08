@@ -56,7 +56,7 @@ public class ModuleEventsProcessor implements WorkspaceFolderLifecycleListener {
     this.bindingManager = bindingManager;
     this.fileTypeClassifier = fileTypeClassifier;
     this.javaConfigCache = javaConfigCache;
-    this.asyncExecutor = Executors.newSingleThreadExecutor(Utils.threadFactory("SonarLint Language Server Module Events Processor", false));
+    this.asyncExecutor = Executors.newSingleThreadExecutor(Utils.threadFactory("CodeScan Language Server Module Events Processor", false));
   }
 
   public void didChangeWatchedFiles(List<FileEvent> changes) {
