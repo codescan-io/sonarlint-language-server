@@ -46,7 +46,8 @@ public class ApacheHttpResponse implements HttpClient.Response {
 
   @Override
   public InputStream bodyAsStream() {
-    return new ByteArrayInputStream(response.getBodyBytes());
+    byte[] bodyBytes = response.getBodyBytes();
+    return bodyBytes != null ? new ByteArrayInputStream(bodyBytes) : null;
   }
 
   @Override
