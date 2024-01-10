@@ -635,7 +635,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
   @Override
   public CompletableFuture<HelpGenerateUserTokenResponse> generateToken(GenerateTokenParams params) {
     return backendServiceFacade.helpGenerateUserToken(params.getBaseServerUrl(),
-            SonarCloudConnectionConfiguration.isSonarCloudAlias(params.getBaseServerUrl()));
+            SonarCloudConnectionConfiguration.isCodeScanCloudAlias(params.getBaseServerUrl()));
   }
 
   @Override

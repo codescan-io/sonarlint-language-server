@@ -54,6 +54,7 @@ import org.sonarsource.sonarlint.ls.util.Utils;
 import static java.util.Arrays.stream;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.sonarsource.sonarlint.core.repository.connection.SonarCloudConnectionConfiguration.isCodeScanCloudAlias;
 import static org.sonarsource.sonarlint.ls.util.Utils.interrupted;
 
 public class SettingsManager implements WorkspaceFolderLifecycleListener {
@@ -66,7 +67,7 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
   private static final String SERVER_ID = "serverId";
   private static final String TOKEN = "token";
   private static final String CONNECTION_ID = "connectionId";
-  private static final String SONARLINT_CONFIGURATION_NAMESPACE = "sonarlint";
+  private static final String SONARLINT_CONFIGURATION_NAMESPACE = "codescan";
   private static final String DISABLE_TELEMETRY = "disableTelemetry";
   private static final String RULES = "rules";
   private static final String TEST_FILE_PATTERN = "testFilePattern";
@@ -295,8 +296,8 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
     parseDeprecatedServerEntries(connectedModeMap, serverConnections);
     @SuppressWarnings("unchecked")
     var connectionsMap = (Map<String, Object>) connectedModeMap.getOrDefault("connections", Collections.emptyMap());
-    parseSonarQubeConnections(connectionsMap, serverConnections);
-    parseSonarCloudConnections(connectionsMap, serverConnections);
+//    parseSonarQubeConnections(connectionsMap, serverConnections);
+    parseCodeScanConnections(connectionsMap, serverConnections);
     return serverConnections;
   }
 
@@ -330,19 +331,22 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
     });
   }
 
-  private void parseSonarCloudConnections(Map<String, Object> connectionsMap, Map<String, ServerConnectionSettings> serverConnections) {
+  private void parseCodeScanConnections(Map<String, Object> connectionsMap, Map<String, ServerConnectionSettings> serverConnections) {
     @SuppressWarnings("unchecked")
-    var sonarcloudEntries = (List<Map<String, Object>>) connectionsMap.getOrDefault("sonarcloud", Collections.emptyList());
-    sonarcloudEntries.forEach(m -> {
-
-      if (checkRequiredAttribute(m, "CodeScan", ORGANIZATION_KEY)) {
-        var connectionId = defaultIfBlank((String) m.get(CONNECTION_ID), DEFAULT_CONNECTION_ID);
-        var organizationKey = (String) m.get(ORGANIZATION_KEY);
-        var serverUrl = (String) m.get(SERVER_URL);
-        var token = getTokenFromClient(organizationKey);
-        var disableNotifs = (Boolean) m.getOrDefault(DISABLE_NOTIFICATIONS, false);
-        addIfUniqueConnectionId(serverConnections, connectionId,
-          new ServerConnectionSettings(connectionId, serverUrl, token, organizationKey, disableNotifs));
+    var codeScanEntries = (List<Map<String, Object>>) connectionsMap.getOrDefault("servers", Collections.emptyList());
+    codeScanEntries.forEach(m -> {
+      if (checkRequiredAttribute(m, "CodeScan", SERVER_URL)) {
+        boolean isCloud = isCodeScanCloudAlias((String) m.get(SERVER_URL));
+        boolean requiredAttributeCheck = !isCloud || checkRequiredAttribute(m, "CodeScan", ORGANIZATION_KEY);
+        if (requiredAttributeCheck) {
+          var connectionId = defaultIfBlank((String) m.get(CONNECTION_ID), DEFAULT_CONNECTION_ID);
+          var organizationKey = (String) m.get(ORGANIZATION_KEY);
+          var serverUrl = (String) m.get(SERVER_URL);
+          var token = getTokenFromClient(isCloud ? organizationKey : serverUrl);
+          var disableNotifs = (Boolean) m.getOrDefault(DISABLE_NOTIFICATIONS, false);
+          addIfUniqueConnectionId(serverConnections, connectionId,
+                  new ServerConnectionSettings(connectionId, serverUrl, token, organizationKey, disableNotifs));
+        }
       }
     });
   }

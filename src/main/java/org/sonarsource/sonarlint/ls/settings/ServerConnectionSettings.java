@@ -23,7 +23,6 @@ import java.util.Objects;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -90,7 +89,7 @@ public class ServerConnectionSettings {
   }
 
   public static boolean isSonarCloudAlias(String serverUrl) {
-    return SonarCloudConnectionConfiguration.isSonarCloudAlias(serverUrl);
+    return SonarCloudConnectionConfiguration.isCodeScanCloudAlias(serverUrl);
   }
 
   public boolean isSmartNotificationsDisabled() {
