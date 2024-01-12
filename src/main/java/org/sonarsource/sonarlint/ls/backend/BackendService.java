@@ -213,4 +213,8 @@ public class BackendService {
   public CompletableFuture<ValidateConnectionResponse> validateConnection(ValidateConnectionParams params) {
     return initializedBackend().getConnectionService().validateConnection(params);
   }
+
+  public CompletableFuture<ValidateConnectionResponse> validateConnectionCredentials(ValidateConnectionParams params) {
+    return initializedBackend().getConnectionService().validateConnectionCredentials(params);
+  }
 }

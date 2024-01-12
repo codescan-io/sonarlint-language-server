@@ -782,7 +782,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
       client.showMessage(new MessageParams(MessageType.Info, "Issue status was changed"));
     }).exceptionally(t -> {
       lsLogOutput.error("Error changing issue status", t);
-      client.showMessage(new MessageParams(MessageType.Error, "Could not change status for the issue. Look at the SonarLint output for details."));
+      client.showMessage(new MessageParams(MessageType.Error, "Could not change status for the issue. Look at the CodeScan output for details."));
       return null;
     });
   }
@@ -793,7 +793,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
       .thenAccept(nothing -> client.showMessage(new MessageParams(MessageType.Info, "New comment was added")))
       .exceptionally(t -> {
         lsLogOutput.error("Error adding issue comment", t);
-        client.showMessage(new MessageParams(MessageType.Error, "Could not add a new issue comment. Look at the SonarLint output for " +
+        client.showMessage(new MessageParams(MessageType.Error, "Could not add a new issue comment. Look at the CodeScan output for " +
           "details."));
         return null;
       });
@@ -835,7 +835,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
       client.showMessage(new MessageParams(MessageType.Info, "Hotspot status was changed"));
     }).exceptionally(t -> {
       lsLogOutput.error("Error changing hotspot status", t);
-      client.showMessage(new MessageParams(MessageType.Error, "Could not change status for the hotspot. Look at the SonarLint output for details."));
+      client.showMessage(new MessageParams(MessageType.Error, "Could not change status for the hotspot. Look at the CodeScan output for details."));
       return null;
     });
   }
@@ -862,7 +862,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
       }
     ).exceptionally(t -> {
       lsLogOutput.error("Error changing hotspot status", t);
-      client.showMessage(new MessageParams(MessageType.Error, "Could not change status for the hotspot. Look at the SonarLint output for details."));
+      client.showMessage(new MessageParams(MessageType.Error, "Could not change status for the hotspot. Look at the CodeScan output for details."));
       return null;
     });
   }

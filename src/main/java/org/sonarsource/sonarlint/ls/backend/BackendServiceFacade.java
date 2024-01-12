@@ -195,6 +195,10 @@ public class BackendServiceFacade {
     return backend.validateConnection(params);
   }
 
+  public CompletableFuture<ValidateConnectionResponse> validateConnectionCredentials(ValidateConnectionParams params) {
+    return backend.validateConnectionCredentials(params);
+  }
+
   public void setTelemetry(SonarLintTelemetry telemetry) {
     this.telemetry = telemetry;
   }

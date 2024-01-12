@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.AbstractAnalysisConfiguration.AbstractBuilder;
@@ -202,6 +203,13 @@ public class AnalysisTaskExecutor {
     Map<Boolean, Map<URI, VersionedOpenFile>> splitJavaAndNonJavaFiles = filesToAnalyze.entrySet().stream().collect(partitioningBy(
       entry -> entry.getValue().isJava(),
       toMap(Entry::getKey, Entry::getValue)));
+    var settings = workspaceFolder.map(WorkspaceFolderWrapper::getSettings)
+            .orElse(settingsManager.getCurrentDefaultFolderSettings());
+
+    if (StringUtils.isNotEmpty(settings.getConnectionId())) {
+      bindingManager.validateConnectionCredentials(settings.getConnectionId());
+    }
+
     Map<URI, VersionedOpenFile> javaFiles = ofNullable(splitJavaAndNonJavaFiles.get(true)).orElse(Map.of());
     Map<URI, VersionedOpenFile> nonJavaFiles = ofNullable(splitJavaAndNonJavaFiles.get(false)).orElse(Map.of());
 
@@ -210,8 +218,6 @@ public class AnalysisTaskExecutor {
       .stream().filter(it -> !javaFilesWithConfig.containsKey(it.getKey()))
       .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     nonJavaFiles.putAll(javaFilesWithoutConfig);
-    var settings = workspaceFolder.map(WorkspaceFolderWrapper::getSettings)
-      .orElse(settingsManager.getCurrentDefaultFolderSettings());
 
     nonJavaFiles = excludeCAndCppFilesIfMissingCompilationDatabase(nonJavaFiles, settings);
 

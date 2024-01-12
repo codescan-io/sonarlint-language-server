@@ -208,7 +208,6 @@ public class ProjectBindingManager implements WorkspaceSettingsChangeListener, W
   private ProjectBindingWrapper computeProjectBinding(WorkspaceFolderSettings settings, Path folderRoot) {
     var connectionId = requireNonNull(settings.getConnectionId());
     var endpointParams = getEndpointParamsFor(connectionId);
-
     if (endpointParams == null) {
       LOG.error("Invalid binding for '{}'", folderRoot);
       return null;
@@ -220,6 +219,12 @@ public class ProjectBindingManager implements WorkspaceSettingsChangeListener, W
     var engine = engineOpt.get();
     var projectKey = requireNonNull(settings.getProjectKey());
     Supplier<String> branchProvider = () -> resolveBranchNameForFolder(folderRoot.toUri(), engine, projectKey);
+
+    var validateConnectionParams = getValidateConnectionParamsFor(connectionId);
+    if (validateConnectionParams != null) {
+      backendServiceFacade.validateConnectionCredentials(validateConnectionParams);
+    }
+
     var httpClient = backendServiceFacade.getHttpClient(connectionId);
     syncAtStartup(engine, endpointParams, projectKey, branchProvider, httpClient);
 
@@ -456,13 +461,22 @@ public class ProjectBindingManager implements WorkspaceSettingsChangeListener, W
     stopUnusedEngines();
   }
 
-  void validateConnection(String id) {
+  public void validateConnection(String id) {
     Optional.ofNullable(getValidateConnectionParamsFor(id))
       .map(backendServiceFacade::validateConnection)
       .ifPresent(validationFuture -> validationFuture.thenAccept(validationResult -> {
         var connectionCheckResult = validationResult.isSuccess() ? ConnectionCheckResult.success(id) : ConnectionCheckResult.failure(id, validationResult.getMessage());
         client.reportConnectionCheckResult(connectionCheckResult);
       }));
+  }
+
+  public void validateConnectionCredentials(String id) {
+    Optional.ofNullable(getValidateConnectionParamsFor(id))
+            .map(backendServiceFacade::validateConnectionCredentials)
+            .ifPresent(validationFuture -> validationFuture.thenAccept(validationResult -> {
+              var connectionCheckResult = validationResult.isSuccess() ? ConnectionCheckResult.success(id) : ConnectionCheckResult.failure(id, validationResult.getMessage());
+              client.reportConnectionCheckResult(connectionCheckResult);
+            }));
   }
 
   public void shutdown() {
