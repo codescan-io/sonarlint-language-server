@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -546,11 +547,16 @@ public class AnalysisTaskExecutor {
 
   private Map<String, String> getCodeScanProperties(WorkspaceFolderSettings settings) {
     var codescanProps = new HashMap<String, String>();
-    var serverConnectionSettings = settingsManager.getCurrentSettings()
-            .getServerConnections().get(settings.getConnectionId());
-    codescanProps.put("sonar.host.url", serverConnectionSettings.getServerUrl());
-    codescanProps.put("sonar.organization", serverConnectionSettings.getOrganizationKey());
-    codescanProps.put("sonar.login", serverConnectionSettings.getToken());
+    if (settingsManager.getCurrentSettings() != null
+            && settingsManager.getCurrentSettings().getServerConnections() != null) {
+      var serverConnectionSettings = settingsManager.getCurrentSettings()
+              .getServerConnections().get(settings.getConnectionId());
+      if (serverConnectionSettings != null) {
+        codescanProps.put("sonar.host.url", Objects.requireNonNullElse(serverConnectionSettings.getServerUrl(), ""));
+        codescanProps.put("sonar.organization", Objects.requireNonNullElse(serverConnectionSettings.getOrganizationKey(), ""));
+        codescanProps.put("sonar.login", Objects.requireNonNullElse(serverConnectionSettings.getToken(), ""));
+      }
+    }
     return codescanProps;
   }
 
