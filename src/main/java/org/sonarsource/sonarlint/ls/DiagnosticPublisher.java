@@ -45,7 +45,7 @@ import static org.sonarsource.sonarlint.ls.util.Utils.severity;
 
 public class DiagnosticPublisher {
 
-  static final String SONARLINT_SOURCE = "sonarlint";
+  static final String SONARLINT_SOURCE = "codescan";
   static final String REMOTE_SOURCE = "remote";
 
   public static final String ITEM_LOCATION = "location";

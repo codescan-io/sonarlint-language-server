@@ -60,7 +60,7 @@ public class AnalysisScheduler implements WorkspaceSettingsChangeListener, Works
   private static final CompletableFuture<Void> COMPLETED_FUTURE = CompletableFuture.completedFuture(null);
   private static final int DEFAULT_TIMER_MS = 2000;
 
-  static final String SONARLINT_SOURCE = "sonarlint";
+  static final String SONARLINT_SOURCE = "codescan";
   public static final String CODESCAN_TAINT_SOURCE = "Latest CodeScan Analysis";
   public static final String CODESCAN_CLOUD_TAINT_SOURCE = "Latest CodeScanCloud Analysis";
 
