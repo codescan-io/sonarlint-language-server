@@ -555,6 +555,7 @@ public class AnalysisTaskExecutor {
         codescanProps.put("sonar.host.url", Objects.requireNonNullElse(serverConnectionSettings.getServerUrl(), ""));
         codescanProps.put("sonar.organization", Objects.requireNonNullElse(serverConnectionSettings.getOrganizationKey(), ""));
         codescanProps.put("sonar.login", Objects.requireNonNullElse(serverConnectionSettings.getToken(), ""));
+        codescanProps.put("codescan.ide.type", "VSCode");
       }
     }
     return codescanProps;
