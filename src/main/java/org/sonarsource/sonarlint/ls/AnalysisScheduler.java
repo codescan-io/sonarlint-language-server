@@ -60,9 +60,9 @@ public class AnalysisScheduler implements WorkspaceSettingsChangeListener, Works
   private static final CompletableFuture<Void> COMPLETED_FUTURE = CompletableFuture.completedFuture(null);
   private static final int DEFAULT_TIMER_MS = 2000;
 
-  static final String SONARLINT_SOURCE = "sonarlint";
-  public static final String SONARQUBE_TAINT_SOURCE = "Latest SonarQube Analysis";
-  public static final String SONARCLOUD_TAINT_SOURCE = "Latest SonarCloud Analysis";
+  static final String SONARLINT_SOURCE = "codescan";
+  public static final String CODESCAN_TAINT_SOURCE = "Latest CodeScan Analysis";
+  public static final String CODESCAN_CLOUD_TAINT_SOURCE = "Latest CodeScanCloud Analysis";
 
   public static final String ITEM_LOCATION = "location";
   public static final String ITEM_FLOW = "flow";
@@ -96,7 +96,7 @@ public class AnalysisScheduler implements WorkspaceSettingsChangeListener, Works
     this.openFilesCache = openFilesCache;
     this.openNotebooksCache = openNotebooksCache;
     this.analysisTaskExecutor = analysisTaskExecutor;
-    this.asyncExecutor = Executors.newSingleThreadExecutor(Utils.threadFactory("SonarLint Language Server Analysis Scheduler", false));
+    this.asyncExecutor = Executors.newSingleThreadExecutor(Utils.threadFactory("CodeScan Language Server Analysis Scheduler", false));
     this.watcher = new EventWatcher(analysisTimerMs);
   }
 
@@ -125,7 +125,7 @@ public class AnalysisScheduler implements WorkspaceSettingsChangeListener, Works
     EventWatcher(long analysisTimerMs) {
       this.analysisTimerMs = analysisTimerMs;
       this.setDaemon(true);
-      this.setName("sonarlint-auto-trigger");
+      this.setName("codescan-auto-trigger");
     }
 
     public void stopWatcher() {

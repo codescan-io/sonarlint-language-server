@@ -97,6 +97,7 @@ import org.sonarsource.sonarlint.core.clientapi.client.binding.GetBindingSuggest
 import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.core.commons.SonarLintUserHome;
 import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
+import org.sonarsource.sonarlint.core.repository.connection.SonarCloudConnectionConfiguration;
 import org.sonarsource.sonarlint.ls.SonarLintExtendedLanguageClient.ConnectionCheckResult;
 import org.sonarsource.sonarlint.ls.backend.BackendInitParams;
 import org.sonarsource.sonarlint.ls.backend.BackendServiceFacade;
@@ -124,7 +125,6 @@ import org.sonarsource.sonarlint.ls.log.LanguageClientLogger;
 import org.sonarsource.sonarlint.ls.notebooks.NotebookDiagnosticPublisher;
 import org.sonarsource.sonarlint.ls.notebooks.OpenNotebooksCache;
 import org.sonarsource.sonarlint.ls.progress.ProgressManager;
-import org.sonarsource.sonarlint.ls.settings.ServerConnectionSettings;
 import org.sonarsource.sonarlint.ls.settings.SettingsManager;
 import org.sonarsource.sonarlint.ls.settings.WorkspaceFolderSettingsChangeListener;
 import org.sonarsource.sonarlint.ls.settings.WorkspaceSettingsChangeListener;
@@ -179,7 +179,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
   private String appName;
 
   /**
-   * Keep track of value 'sonarlint.trace.server' on client side. Not used currently, but keeping it just in case.
+   * Keep track of value 'codescan.trace.server' on client side. Not used currently, but keeping it just in case.
    */
   private TraceValue traceLevel;
 
@@ -191,7 +191,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
   private final CountDownLatch shutdownLatch;
 
   SonarLintLanguageServer(InputStream inputStream, OutputStream outputStream, Collection<Path> analyzers) {
-    this.threadPool = Executors.newCachedThreadPool(Utils.threadFactory("SonarLint LSP message processor", false));
+    this.threadPool = Executors.newCachedThreadPool(Utils.threadFactory("CodeScan LSP message processor", false));
     var input = new ExitingInputStream(inputStream, this);
     var launcher = new Launcher.Builder<SonarLintExtendedLanguageClient>()
       .setLocalService(this)
@@ -336,7 +336,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
         setNotebookSyncOptions(c);
       }
 
-      var info = new ServerInfo("SonarLint Language Server", getServerVersion("slls-version.txt"));
+      var info = new ServerInfo("CodeScan Language Server", getServerVersion("slls-version.txt"));
       provideBackendInitData(productKey, userAgent);
       return new InitializeResult(c, info);
     });
@@ -635,7 +635,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
   @Override
   public CompletableFuture<HelpGenerateUserTokenResponse> generateToken(GenerateTokenParams params) {
     return backendServiceFacade.helpGenerateUserToken(params.getBaseServerUrl(),
-      ServerConnectionSettings.isSonarCloudAlias(params.getBaseServerUrl()));
+            SonarCloudConnectionConfiguration.isCodeScanCloudAlias(params.getBaseServerUrl()));
   }
 
   @Override
@@ -782,7 +782,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
       client.showMessage(new MessageParams(MessageType.Info, "Issue status was changed"));
     }).exceptionally(t -> {
       lsLogOutput.error("Error changing issue status", t);
-      client.showMessage(new MessageParams(MessageType.Error, "Could not change status for the issue. Look at the SonarLint output for details."));
+      client.showMessage(new MessageParams(MessageType.Error, "Could not change status for the issue. Look at the CodeScan output for details."));
       return null;
     });
   }
@@ -793,7 +793,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
       .thenAccept(nothing -> client.showMessage(new MessageParams(MessageType.Info, "New comment was added")))
       .exceptionally(t -> {
         lsLogOutput.error("Error adding issue comment", t);
-        client.showMessage(new MessageParams(MessageType.Error, "Could not add a new issue comment. Look at the SonarLint output for " +
+        client.showMessage(new MessageParams(MessageType.Error, "Could not add a new issue comment. Look at the CodeScan output for " +
           "details."));
         return null;
       });
@@ -835,7 +835,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
       client.showMessage(new MessageParams(MessageType.Info, "Hotspot status was changed"));
     }).exceptionally(t -> {
       lsLogOutput.error("Error changing hotspot status", t);
-      client.showMessage(new MessageParams(MessageType.Error, "Could not change status for the hotspot. Look at the SonarLint output for details."));
+      client.showMessage(new MessageParams(MessageType.Error, "Could not change status for the hotspot. Look at the CodeScan output for details."));
       return null;
     });
   }
@@ -862,7 +862,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
       }
     ).exceptionally(t -> {
       lsLogOutput.error("Error changing hotspot status", t);
-      client.showMessage(new MessageParams(MessageType.Error, "Could not change status for the hotspot. Look at the SonarLint output for details."));
+      client.showMessage(new MessageParams(MessageType.Error, "Could not change status for the hotspot. Look at the CodeScan output for details."));
       return null;
     });
   }

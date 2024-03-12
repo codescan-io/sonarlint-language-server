@@ -36,8 +36,8 @@ import org.sonarsource.sonarlint.core.serverconnection.issues.ServerTaintIssue;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.sonarsource.sonarlint.ls.AnalysisScheduler.SONARCLOUD_TAINT_SOURCE;
-import static org.sonarsource.sonarlint.ls.AnalysisScheduler.SONARQUBE_TAINT_SOURCE;
+import static org.sonarsource.sonarlint.ls.AnalysisScheduler.CODESCAN_CLOUD_TAINT_SOURCE;
+import static org.sonarsource.sonarlint.ls.AnalysisScheduler.CODESCAN_TAINT_SOURCE;
 import static org.sonarsource.sonarlint.ls.util.Utils.textRangeWithHashFromTextRange;
 
 class TaintIssueTests {
@@ -94,7 +94,7 @@ class TaintIssueTests {
       textRangeWithHashFromTextRange(MAIN_LOCATION1.getTextRange()), "java_se");
     serverTaintIssue.setFlows(List.of(FLOW1));
 
-    TaintIssue taintIssue = TaintIssue.from(serverTaintIssue, SONARCLOUD_TAINT_SOURCE);
+    TaintIssue taintIssue = TaintIssue.from(serverTaintIssue, CODESCAN_CLOUD_TAINT_SOURCE);
 
     assertAll("TaintIssue is equal to ServerTaintIssue", () -> {
       assertEquals(serverTaintIssue.getKey(), taintIssue.getKey());
@@ -108,7 +108,7 @@ class TaintIssueTests {
       assertEquals(serverTaintIssue.getFlows(), taintIssue.getFlows());
       assertEquals(serverTaintIssue.getTextRange(), taintIssue.getTextRange());
       assertEquals(serverTaintIssue.getRuleDescriptionContextKey(), taintIssue.getRuleDescriptionContextKey());
-      assertEquals(SONARCLOUD_TAINT_SOURCE, taintIssue.getSource());
+      assertEquals(CODESCAN_CLOUD_TAINT_SOURCE, taintIssue.getSource());
     });
 
   }
@@ -141,7 +141,7 @@ class TaintIssueTests {
       assertEquals(serverTaintIssue1.getType(), taintIssue1.getType());
       assertEquals(serverTaintIssue1.getFlows(), taintIssue1.getFlows());
       assertEquals(serverTaintIssue1.getTextRange(), taintIssue1.getTextRange());
-      assertEquals(SONARQUBE_TAINT_SOURCE, taintIssue1.getSource());
+      assertEquals(CODESCAN_TAINT_SOURCE, taintIssue1.getSource());
     });
 
     assertAll("TaintIssue2 is the same as ServerTaintIssue2", () -> {
@@ -155,7 +155,7 @@ class TaintIssueTests {
       assertEquals(serverTaintIssue2.getType(), taintIssue2.getType());
       assertEquals(serverTaintIssue2.getFlows(), taintIssue2.getFlows());
       assertEquals(serverTaintIssue2.getTextRange(), taintIssue2.getTextRange());
-      assertEquals(SONARQUBE_TAINT_SOURCE, taintIssue2.getSource());
+      assertEquals(CODESCAN_TAINT_SOURCE, taintIssue2.getSource());
     });
   }
 }

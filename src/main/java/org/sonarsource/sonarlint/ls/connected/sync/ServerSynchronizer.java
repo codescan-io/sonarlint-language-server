@@ -96,11 +96,11 @@ public class ServerSynchronizer {
 
   private void showOperationResult(Set<String> failedConnectionIds) {
     if (failedConnectionIds.isEmpty()) {
-      client.showMessage(new MessageParams(MessageType.Info, "All SonarLint bindings successfully updated"));
+      client.showMessage(new MessageParams(MessageType.Info, "All CodeScan bindings successfully updated"));
     } else {
       var connections = String.join(", ", failedConnectionIds);
       client.showMessage(
-        new MessageParams(MessageType.Error, "Binding update failed for the following connection(s): " + connections + ". Look at the SonarLint output for details."));
+        new MessageParams(MessageType.Error, "Binding update failed for the following connection(s): " + connections + ". Look at the CodeScan output for details."));
     }
   }
 
@@ -129,13 +129,13 @@ public class ServerSynchronizer {
         return;
       }
       subProgress.doInSubProgress("Update projects storages", 0.5f, s -> tryUpdateBoundProjectsStorage(
-        branchNamesByProjectKey.keySet(), endpointParams, engineOpt.get(), httpClient, s));
+              connectionId, branchNamesByProjectKey.keySet(), endpointParams, failedConnectionIds, engineOpt.get(), httpClient, s));
       subProgress.doInSubProgress("Sync projects storages", 0.5f, s -> syncOneEngine(
         connectionId, branchNamesByProjectKey, engineOpt.get(), httpClient, s));
     });
   }
 
-  private static void tryUpdateBoundProjectsStorage(Set<String> projectKeys, EndpointParams endpointParams,
+  private static void tryUpdateBoundProjectsStorage(String connectionId, Set<String> projectKeys, EndpointParams endpointParams, Set<String> failedConnectionIds,
     ConnectedSonarLintEngine engine, HttpClient httpClient, ProgressFacade progress) {
     projectKeys.forEach(projectKey -> progress.doInSubProgress(projectKey, 1.0f / projectKeys.size(), subProgress -> {
       try {
@@ -144,6 +144,7 @@ public class ServerSynchronizer {
         throw e;
       } catch (Exception updateFailed) {
         LOG.error("Binding update failed for project key '{}'", projectKey, updateFailed);
+        failedConnectionIds.add(connectionId);
       }
     }));
   }

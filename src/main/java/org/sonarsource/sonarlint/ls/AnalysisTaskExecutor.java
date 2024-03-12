@@ -30,12 +30,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.AbstractAnalysisConfiguration.AbstractBuilder;
@@ -202,6 +204,13 @@ public class AnalysisTaskExecutor {
     Map<Boolean, Map<URI, VersionedOpenFile>> splitJavaAndNonJavaFiles = filesToAnalyze.entrySet().stream().collect(partitioningBy(
       entry -> entry.getValue().isJava(),
       toMap(Entry::getKey, Entry::getValue)));
+    var settings = workspaceFolder.map(WorkspaceFolderWrapper::getSettings)
+            .orElse(settingsManager.getCurrentDefaultFolderSettings());
+
+    if (StringUtils.isNotEmpty(settings.getConnectionId())) {
+      bindingManager.validateConnectionCredentials(settings.getConnectionId());
+    }
+
     Map<URI, VersionedOpenFile> javaFiles = ofNullable(splitJavaAndNonJavaFiles.get(true)).orElse(Map.of());
     Map<URI, VersionedOpenFile> nonJavaFiles = ofNullable(splitJavaAndNonJavaFiles.get(false)).orElse(Map.of());
 
@@ -210,8 +219,6 @@ public class AnalysisTaskExecutor {
       .stream().filter(it -> !javaFilesWithConfig.containsKey(it.getKey()))
       .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     nonJavaFiles.putAll(javaFilesWithoutConfig);
-    var settings = workspaceFolder.map(WorkspaceFolderWrapper::getSettings)
-      .orElse(settingsManager.getCurrentDefaultFolderSettings());
 
     nonJavaFiles = excludeCAndCppFilesIfMissingCompilationDatabase(nonJavaFiles, settings);
 
@@ -264,7 +271,7 @@ public class AnalysisTaskExecutor {
     javaFiles.forEach((uri, openFile) -> {
       var javaConfigOpt = javaConfigCache.getOrFetch(uri);
       if (javaConfigOpt.isEmpty()) {
-        lsLogOutput.debug(format("Analysis of Java file '%s' may not show all issues because SonarLint" +
+        lsLogOutput.debug(format("Analysis of Java file '%s' may not show all issues because CodeScan" +
           " was unable to query project configuration (classpath, source level, ...)", uri));
         clearIssueCacheAndPublishEmptyDiagnostics(uri);
       } else {
@@ -301,7 +308,7 @@ public class AnalysisTaskExecutor {
 
     if (!nonExcludedFiles.isEmpty()) {
       if (task.shouldShowProgress()) {
-        progressManager.doWithProgress(String.format("SonarLint scanning %d files for hotspots", task.getFilesToAnalyze().size()), null, () -> {},
+        progressManager.doWithProgress(String.format("CodeScan scanning %d files for hotspots", task.getFilesToAnalyze().size()), null, () -> {},
           progressFacade -> analyzeSingleModuleNonExcluded(task, settings, binding, nonExcludedFiles, baseDirUri, javaConfigs, progressFacade));
       } else {
         analyzeSingleModuleNonExcluded(task, settings, binding, nonExcludedFiles, baseDirUri, javaConfigs, null);
@@ -513,7 +520,7 @@ public class AnalysisTaskExecutor {
       engine.getPluginDetails(),
       () -> filesToAnalyze.forEach((fileUri, openFile) -> {
         var issues = issuesPerFiles.getOrDefault(fileUri, List.of());
-        var filePath = FileUtils.toSonarQubePath(FileUtils.getFileRelativePath(baseDir, fileUri));
+        var filePath = FileUtils.toCodeScanPath(FileUtils.getFileRelativePath(baseDir, fileUri));
         serverIssueTracker.matchAndTrack(filePath, issues, issueListener, task.shouldFetchServerIssues());
       }));
   }
@@ -524,6 +531,7 @@ public class AnalysisTaskExecutor {
     configurationBuilder.setBaseDir(baseDir)
       .setModuleKey(baseDirUri)
       .putAllExtraProperties(settings.getAnalyzerProperties())
+      .putAllExtraProperties(getCodeScanProperties(settings))
       .putAllExtraProperties(javaConfigCache.configureJavaProperties(filesToAnalyze.keySet(), javaConfigs));
     var pathToCompileCommands = settings.getPathToCompileCommands();
     if (pathToCompileCommands != null) {
@@ -535,6 +543,22 @@ public class AnalysisTaskExecutor {
           fileTypeClassifier.isTest(settings, uri, openFile.isJava(), () -> ofNullable(javaConfigs.get(uri))),
           openFile.getLanguageId())));
     return configurationBuilder;
+  }
+
+  private Map<String, String> getCodeScanProperties(WorkspaceFolderSettings settings) {
+    var codescanProps = new HashMap<String, String>();
+    if (settingsManager.getCurrentSettings() != null
+            && settingsManager.getCurrentSettings().getServerConnections() != null) {
+      var serverConnectionSettings = settingsManager.getCurrentSettings()
+              .getServerConnections().get(settings.getConnectionId());
+      if (serverConnectionSettings != null) {
+        codescanProps.put("sonar.host.url", Objects.requireNonNullElse(serverConnectionSettings.getServerUrl(), ""));
+        codescanProps.put("sonar.organization", Objects.requireNonNullElse(serverConnectionSettings.getOrganizationKey(), ""));
+        codescanProps.put("sonar.login", Objects.requireNonNullElse(serverConnectionSettings.getToken(), ""));
+      }
+    }
+    codescanProps.put("codescan.ide.type", "VSCode");
+    return codescanProps;
   }
 
   /**

@@ -77,21 +77,21 @@ import org.sonarsource.sonarlint.ls.settings.SettingsManager;
 import org.sonarsource.sonarlint.ls.telemetry.SonarLintTelemetry;
 
 import static java.net.URI.create;
-import static org.sonarsource.sonarlint.ls.AnalysisScheduler.SONARCLOUD_TAINT_SOURCE;
+import static org.sonarsource.sonarlint.ls.AnalysisScheduler.CODESCAN_CLOUD_TAINT_SOURCE;
 import static org.sonarsource.sonarlint.ls.AnalysisScheduler.SONARLINT_SOURCE;
-import static org.sonarsource.sonarlint.ls.AnalysisScheduler.SONARQUBE_TAINT_SOURCE;
+import static org.sonarsource.sonarlint.ls.AnalysisScheduler.CODESCAN_TAINT_SOURCE;
 import static org.sonarsource.sonarlint.ls.util.Utils.interrupted;
 
 public class CommandManager {
 
   // Server side
-  static final String SONARLINT_QUICK_FIX_APPLIED = "SonarLint.QuickFixApplied";
-  static final String SONARLINT_OPEN_STANDALONE_RULE_DESCRIPTION_COMMAND = "SonarLint.OpenStandaloneRuleDesc";
-  static final String SONARLINT_OPEN_RULE_DESCRIPTION_FROM_CODE_ACTION_COMMAND = "SonarLint.OpenRuleDescCodeAction";
-  static final String SONARLINT_UPDATE_ALL_BINDINGS_COMMAND = "SonarLint.UpdateAllBindings";
-  static final String SONARLINT_BROWSE_TAINT_VULNERABILITY = "SonarLint.BrowseTaintVulnerability";
-  static final String SONARLINT_SHOW_TAINT_VULNERABILITY_FLOWS = "SonarLint.ShowTaintVulnerabilityFlows";
-  static final String SONARLINT_SHOW_SECURITY_HOTSPOT_FLOWS = "SonarLint.ShowSecurityHotspotFlows";
+  static final String SONARLINT_QUICK_FIX_APPLIED = "CodeScan.QuickFixApplied";
+  static final String SONARLINT_OPEN_STANDALONE_RULE_DESCRIPTION_COMMAND = "CodeScan.OpenStandaloneRuleDesc";
+  static final String SONARLINT_OPEN_RULE_DESCRIPTION_FROM_CODE_ACTION_COMMAND = "CodeScan.OpenRuleDescCodeAction";
+  static final String SONARLINT_UPDATE_ALL_BINDINGS_COMMAND = "CodeScan.UpdateAllBindings";
+  static final String SONARLINT_BROWSE_TAINT_VULNERABILITY = "CodeScan.BrowseTaintVulnerability";
+  static final String SONARLINT_SHOW_TAINT_VULNERABILITY_FLOWS = "CodeScan.ShowTaintVulnerabilityFlows";
+  static final String SONARLINT_SHOW_SECURITY_HOTSPOT_FLOWS = "CodeScan.ShowSecurityHotspotFlows";
   static final List<String> SONARLINT_SERVERSIDE_COMMANDS = List.of(
     SONARLINT_QUICK_FIX_APPLIED,
     SONARLINT_UPDATE_ALL_BINDINGS_COMMAND,
@@ -100,9 +100,9 @@ public class CommandManager {
     SONARLINT_BROWSE_TAINT_VULNERABILITY,
     SONARLINT_SHOW_TAINT_VULNERABILITY_FLOWS);
   // Client side
-  static final String SONARLINT_DEACTIVATE_RULE_COMMAND = "SonarLint.DeactivateRule";
-  static final String RESOLVE_ISSUE = "SonarLint.ResolveIssue";
-  static final String SONARLINT_ACTION_PREFIX = "SonarLint: ";
+  static final String SONARLINT_DEACTIVATE_RULE_COMMAND = "CodeScan.DeactivateRule";
+  static final String RESOLVE_ISSUE = "CodeScan.ResolveIssue";
+  static final String SONARLINT_ACTION_PREFIX = "CodeScan: ";
 
   private final SonarLintExtendedLanguageClient client;
   private final SettingsManager settingsManager;
@@ -138,7 +138,7 @@ public class CommandManager {
       cancelToken.checkCanceled();
       if (SONARLINT_SOURCE.equals(diagnostic.getSource())) {
         computeCodeActionsForSonarLintIssues(diagnostic, codeActions, params, cancelToken);
-      } else if (SONARQUBE_TAINT_SOURCE.equals(diagnostic.getSource()) || SONARCLOUD_TAINT_SOURCE.equals((diagnostic.getSource()))) {
+      } else if (CODESCAN_TAINT_SOURCE.equals(diagnostic.getSource()) || CODESCAN_CLOUD_TAINT_SOURCE.equals((diagnostic.getSource()))) {
         computeCodeActionsForTaintIssues(diagnostic, codeActions, params);
       }
     }

@@ -89,7 +89,7 @@ public class BackendService {
       initializeLatch.await();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      throw new IllegalStateException("SonarLint backend initialization interrupted", e);
+      throw new IllegalStateException("CodeScan backend initialization interrupted", e);
     }
     return backend;
   }
@@ -115,7 +115,7 @@ public class BackendService {
   public static List<SonarCloudConnectionConfigurationDto> extractSonarCloudConnections(Map<String, ServerConnectionSettings> connections) {
     return connections.entrySet().stream()
       .filter(it -> it.getValue().isSonarCloudAlias())
-      .map(it -> new SonarCloudConnectionConfigurationDto(it.getKey(), it.getValue().getOrganizationKey(), it.getValue().isSmartNotificationsDisabled()))
+      .map(it -> new SonarCloudConnectionConfigurationDto(it.getKey(), it.getValue().getServerUrl(), it.getValue().getOrganizationKey(), it.getValue().isSmartNotificationsDisabled()))
       .collect(Collectors.toList());
   }
 
@@ -212,5 +212,9 @@ public class BackendService {
 
   public CompletableFuture<ValidateConnectionResponse> validateConnection(ValidateConnectionParams params) {
     return initializedBackend().getConnectionService().validateConnection(params);
+  }
+
+  public CompletableFuture<ValidateConnectionResponse> validateConnectionCredentials(ValidateConnectionParams params) {
+    return initializedBackend().getConnectionService().validateConnectionCredentials(params);
   }
 }

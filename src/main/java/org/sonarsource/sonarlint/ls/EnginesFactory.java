@@ -64,14 +64,17 @@ public class EnginesFactory {
     Language.SECRETS,
     Language.TERRAFORM,
     Language.TS,
+    Language.KOTLIN,
     Language.XML,
-    Language.YAML,
+    Language.YAML
   };
 
   private static final Language[] CONNECTED_ADDITIONAL_LANGUAGES = {
-    Language.APEX,
     Language.COBOL,
-    Language.PLSQL
+    Language.PLSQL,
+    Language.SF_META,
+    Language.VF,
+    Language.APEX
   };
 
   private final NodeJsRuntime nodeJsRuntime;
@@ -91,7 +94,7 @@ public class EnginesFactory {
     if (shutdown.get().equals(true)) {
       throw new IllegalStateException("Language server is shutting down, won't create engine");
     }
-    LOG.debug("Starting standalone SonarLint engine...");
+    LOG.debug("Starting standalone CodeScan engine...");
     LOG.debug("Using {} analyzers", standaloneAnalyzers.size());
 
     try {
@@ -105,10 +108,10 @@ public class EnginesFactory {
         .build();
 
       var engine = newStandaloneEngine(configuration);
-      LOG.debug("Standalone SonarLint engine started");
+      LOG.debug("Standalone CodeScan engine started");
       return engine;
     } catch (Exception e) {
-      LOG.error("Error starting standalone SonarLint engine", e);
+      LOG.error("Error starting standalone CodeScan engine", e);
       throw new IllegalStateException(e);
     }
   }
@@ -142,7 +145,7 @@ public class EnginesFactory {
 
     var engine = newConnectedEngine(builder.build());
 
-    LOG.debug("SonarLint engine started for connection '{}'", connectionId);
+    LOG.debug("CodeScan engine started for connection '{}'", connectionId);
     return engine;
   }
 

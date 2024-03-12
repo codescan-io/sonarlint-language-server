@@ -57,7 +57,7 @@ public class WorkspaceFoldersManager {
   private final ExecutorService executor;
 
   public WorkspaceFoldersManager(BackendServiceFacade backendServiceFacade) {
-    this(Executors.newCachedThreadPool(Utils.threadFactory("SonarLint folders manager", false)), backendServiceFacade);
+    this(Executors.newCachedThreadPool(Utils.threadFactory("CodeScan folders manager", false)), backendServiceFacade);
   }
 
   WorkspaceFoldersManager(ExecutorService executor, BackendServiceFacade backendServiceFacade) {

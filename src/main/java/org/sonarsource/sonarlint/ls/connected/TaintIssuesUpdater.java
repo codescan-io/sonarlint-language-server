@@ -50,7 +50,7 @@ public class TaintIssuesUpdater {
     WorkspaceFoldersManager workspaceFoldersManager, SettingsManager settingsManager, DiagnosticPublisher diagnosticPublisher,
     BackendServiceFacade backendServiceFacade) {
     this(bindingManager, taintVulnerabilitiesCache, workspaceFoldersManager, settingsManager, diagnosticPublisher,
-      Executors.newSingleThreadExecutor(Utils.threadFactory("SonarLint Language Server Analysis Scheduler", false)), backendServiceFacade);
+      Executors.newSingleThreadExecutor(Utils.threadFactory("CodeScan Language Server Analysis Scheduler", false)), backendServiceFacade);
   }
 
   TaintIssuesUpdater(ProjectBindingManager bindingManager, TaintVulnerabilitiesCache taintVulnerabilitiesCache, WorkspaceFoldersManager workspaceFoldersManager,
@@ -90,7 +90,7 @@ public class TaintIssuesUpdater {
     var httpClient = backendServiceFacade.getHttpClient(connectionId);
 
     // download taints
-    var sqFilePath = FileUtils.toSonarQubePath(FileUtils.getFileRelativePath(Paths.get(folderUri), fileUri));
+    var sqFilePath = FileUtils.toCodeScanPath(FileUtils.getFileRelativePath(Paths.get(folderUri), fileUri));
     engine.downloadAllServerTaintIssuesForFile(endpointParams, httpClient, binding, sqFilePath, branchName, null);
     var serverIssues = engine.getServerTaintIssues(binding, branchName, sqFilePath);
 

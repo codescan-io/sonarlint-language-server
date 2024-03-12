@@ -54,6 +54,7 @@ import org.sonarsource.sonarlint.ls.util.Utils;
 import static java.util.Arrays.stream;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.sonarsource.sonarlint.core.repository.connection.SonarCloudConnectionConfiguration.isCodeScanCloudAlias;
 import static org.sonarsource.sonarlint.ls.util.Utils.interrupted;
 
 public class SettingsManager implements WorkspaceFolderLifecycleListener {
@@ -66,7 +67,7 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
   private static final String SERVER_ID = "serverId";
   private static final String TOKEN = "token";
   private static final String CONNECTION_ID = "connectionId";
-  private static final String SONARLINT_CONFIGURATION_NAMESPACE = "sonarlint";
+  private static final String SONARLINT_CONFIGURATION_NAMESPACE = "codescan";
   private static final String DISABLE_TELEMETRY = "disableTelemetry";
   private static final String RULES = "rules";
   private static final String TEST_FILE_PATTERN = "testFilePattern";
@@ -98,7 +99,7 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
 
   public SettingsManager(SonarLintExtendedLanguageClient client, WorkspaceFoldersManager foldersManager,
     BackendServiceFacade backendServiceFacade) {
-    this(client, foldersManager, Executors.newCachedThreadPool(Utils.threadFactory("SonarLint settings manager", false)), backendServiceFacade);
+    this(client, foldersManager, Executors.newCachedThreadPool(Utils.threadFactory("CodeScan settings manager", false)), backendServiceFacade);
   }
 
   SettingsManager(SonarLintExtendedLanguageClient client, WorkspaceFoldersManager foldersManager,
@@ -295,8 +296,8 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
     parseDeprecatedServerEntries(connectedModeMap, serverConnections);
     @SuppressWarnings("unchecked")
     var connectionsMap = (Map<String, Object>) connectedModeMap.getOrDefault("connections", Collections.emptyMap());
-    parseSonarQubeConnections(connectionsMap, serverConnections);
-    parseSonarCloudConnections(connectionsMap, serverConnections);
+//    parseSonarQubeConnections(connectionsMap, serverConnections);
+    parseCodeScanConnections(connectionsMap, serverConnections);
     return serverConnections;
   }
 
@@ -319,7 +320,7 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
     @SuppressWarnings("unchecked")
     var sonarqubeEntries = (List<Map<String, Object>>) connectionsMap.getOrDefault("sonarqube", Collections.emptyList());
     sonarqubeEntries.forEach(m -> {
-      if (checkRequiredAttribute(m, "SonarQube server", SERVER_URL)) {
+      if (checkRequiredAttribute(m, "CodeScan server", SERVER_URL)) {
         var connectionId = defaultIfBlank((String) m.get(CONNECTION_ID), DEFAULT_CONNECTION_ID);
         var url = (String) m.get(SERVER_URL);
         var token = getTokenFromClient(url);
@@ -330,18 +331,22 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
     });
   }
 
-  private void parseSonarCloudConnections(Map<String, Object> connectionsMap, Map<String, ServerConnectionSettings> serverConnections) {
+  private void parseCodeScanConnections(Map<String, Object> connectionsMap, Map<String, ServerConnectionSettings> serverConnections) {
     @SuppressWarnings("unchecked")
-    var sonarcloudEntries = (List<Map<String, Object>>) connectionsMap.getOrDefault("sonarcloud", Collections.emptyList());
-    sonarcloudEntries.forEach(m -> {
-
-      if (checkRequiredAttribute(m, "SonarCloud", ORGANIZATION_KEY)) {
-        var connectionId = defaultIfBlank((String) m.get(CONNECTION_ID), DEFAULT_CONNECTION_ID);
-        var organizationKey = (String) m.get(ORGANIZATION_KEY);
-        var token = getTokenFromClient(organizationKey);
-        var disableNotifs = (Boolean) m.getOrDefault(DISABLE_NOTIFICATIONS, false);
-        addIfUniqueConnectionId(serverConnections, connectionId,
-          new ServerConnectionSettings(connectionId, ServerConnectionSettings.SONARCLOUD_URL, token, organizationKey, disableNotifs));
+    var codeScanEntries = (List<Map<String, Object>>) connectionsMap.getOrDefault("servers", Collections.emptyList());
+    codeScanEntries.forEach(m -> {
+      if (checkRequiredAttribute(m, "CodeScan", SERVER_URL)) {
+        boolean isCloud = isCodeScanCloudAlias((String) m.get(SERVER_URL));
+        boolean requiredAttributeCheck = !isCloud || checkRequiredAttribute(m, "CodeScan", ORGANIZATION_KEY);
+        if (requiredAttributeCheck) {
+          var connectionId = defaultIfBlank((String) m.get(CONNECTION_ID), DEFAULT_CONNECTION_ID);
+          var organizationKey = (String) m.get(ORGANIZATION_KEY);
+          var serverUrl = (String) m.get(SERVER_URL);
+          var token = getTokenFromClient(isCloud ? organizationKey : serverUrl);
+          var disableNotifs = (Boolean) m.getOrDefault(DISABLE_NOTIFICATIONS, false);
+          addIfUniqueConnectionId(serverConnections, connectionId,
+                  new ServerConnectionSettings(connectionId, serverUrl, token, organizationKey, disableNotifs));
+        }
       }
     });
   }
@@ -371,7 +376,7 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
   private static void addIfUniqueConnectionId(Map<String, ServerConnectionSettings> serverConnections, String connectionId, ServerConnectionSettings connectionSettings) {
     if (serverConnections.containsKey(connectionId)) {
       if (DEFAULT_CONNECTION_ID.equals(connectionId)) {
-        LOG.error("Please specify a unique 'connectionId' in your settings for each of the SonarQube/SonarCloud connections.");
+        LOG.error("Please specify a unique 'connectionId' in your settings for each of the CodeScan connections.");
       } else {
         LOG.error("Multiple server connections with the same identifier '{}'. Fix your settings.", connectionId);
       }
@@ -398,7 +403,7 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
         connectionId = projectBinding.getOrDefault(SERVER_ID, projectBinding.get(CONNECTION_ID));
         if (isBlank(connectionId)) {
           if (currentSettings.getServerConnections().isEmpty()) {
-            LOG.error("No SonarQube/SonarCloud connections defined for your binding. Please update your settings.");
+            LOG.error("No CodeScan connections defined for your binding. Please update your settings.");
           } else if (currentSettings.getServerConnections().size() == 1) {
             connectionId = currentSettings.getServerConnections().keySet().iterator().next();
           } else {
@@ -407,7 +412,7 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
             connectionId = null;
           }
         } else if (!currentSettings.getServerConnections().containsKey(connectionId)) {
-          LOG.error("No SonarQube/SonarCloud connections defined for your binding with id '{}'. Please update your settings.", connectionId);
+          LOG.error("No CodeScan connections defined for your binding with id '{}'. Please update your settings.", connectionId);
         }
       }
     }
