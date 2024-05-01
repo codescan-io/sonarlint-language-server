@@ -522,12 +522,12 @@ public class ProjectBindingManager implements WorkspaceSettingsChangeListener, W
   }
 
   public void updateAllTaintIssues() {
-    forEachBoundFolder((folder, folderSettings) -> {
-      if (folder == null) {
-        return;
-      }
-      getBindingAndRepublishTaints(folder);
-    });
+//    forEachBoundFolder((folder, folderSettings) -> {
+//      if (folder == null) {
+//        return;
+//      }
+//      getBindingAndRepublishTaints(folder);
+//    });
   }
 
   private void updateAllTaintIssuesForOneFolder(@Nullable WorkspaceFolderWrapper folder, ProjectBinding binding, String connectionId) {
@@ -561,7 +561,7 @@ public class ProjectBindingManager implements WorkspaceSettingsChangeListener, W
         var serverTaintIssues = engine.getServerTaintIssues(bindingWrapper.getBinding(), branchName, filePath);
         var connectionSettings = settingsManager.getCurrentSettings().getServerConnections().get(bindingWrapper.getConnectionId());
         var isSonarCloud = connectionSettings != null && connectionSettings.isSonarCloudAlias();
-        taintVulnerabilitiesCache.reload(fileUri, TaintIssue.from(serverTaintIssues, isSonarCloud));
+        //taintVulnerabilitiesCache.reload(fileUri, TaintIssue.from(serverTaintIssues, isSonarCloud));
         diagnosticPublisher.publishDiagnostics(fileUri, false);
       }
     }

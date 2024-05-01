@@ -95,12 +95,12 @@ public class TaintIssuesUpdater {
     var serverIssues = engine.getServerTaintIssues(binding, branchName, sqFilePath);
 
     // reload cache
-    taintVulnerabilitiesCache.reload(fileUri, TaintIssue.from(serverIssues, connectionSettings.isSonarCloudAlias()));
+   /* taintVulnerabilitiesCache.reload(fileUri, TaintIssue.from(serverIssues, connectionSettings.isSonarCloudAlias()));
     long foundVulnerabilities = taintVulnerabilitiesCache.getAsDiagnostics(fileUri).count();
     if (foundVulnerabilities > 0) {
       LOG.info(format("Fetched %s %s from %s", foundVulnerabilities,
         pluralize(foundVulnerabilities, "vulnerability", "vulnerabilities"), connectionId));
-    }
+    }*/
     diagnosticPublisher.publishDiagnostics(fileUri, false);
   }
 
