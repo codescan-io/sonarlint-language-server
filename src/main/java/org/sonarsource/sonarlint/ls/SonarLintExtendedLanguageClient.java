@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
+import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
@@ -550,6 +551,9 @@ public interface SonarLintExtendedLanguageClient extends LanguageClient {
 
   @JsonNotification("codescan/reportConnectionCheckResult")
   void reportConnectionCheckResult(ConnectionCheckResult result);
+
+  @JsonNotification("codescan/publishCodeScanDiagnostics")
+  void publishCodeScanDiagnostics(PublishDiagnosticsParams params);
 
   class ConnectionCheckResult {
     private final String connectionId;
