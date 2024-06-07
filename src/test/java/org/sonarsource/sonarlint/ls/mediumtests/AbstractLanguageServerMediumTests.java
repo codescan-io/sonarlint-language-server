@@ -512,6 +512,11 @@ public abstract class AbstractLanguageServerMediumTests {
     }
 
     @Override
+    public void publishCodeScanDiagnostics(PublishDiagnosticsParams params) {
+      // NOP
+    }
+
+    @Override
     public CompletableFuture<String> getTokenForServer(String serverId) {
       return CompletableFutures.computeAsync(server -> "token");
     }
