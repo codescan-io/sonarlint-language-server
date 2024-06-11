@@ -529,4 +529,17 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
   }
 
+  class CheckIfCloudConnectionParams {
+    private final String url;
+
+    public CheckIfCloudConnectionParams(String url) {
+      this.url = url;
+    }
+
+    public String getUrl() {
+      return url;
+    }
+  }
+  @JsonRequest("codescan/checkIfConnectionIsCloud")
+  CompletableFuture<Map<String, Boolean>> checkIfConnectionIsCloud(CheckIfCloudConnectionParams params);
 }

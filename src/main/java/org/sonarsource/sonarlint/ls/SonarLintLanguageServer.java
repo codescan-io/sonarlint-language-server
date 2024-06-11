@@ -44,6 +44,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.Command;
@@ -865,5 +866,11 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
       client.showMessage(new MessageParams(MessageType.Error, "Could not change status for the hotspot. Look at the CodeScan output for details."));
       return null;
     });
+  }
+
+  public CompletableFuture<Map<String, Boolean>> checkIfConnectionIsCloud(CheckIfCloudConnectionParams params) {
+    boolean isCloudConnection = StringUtils.isNotBlank(params.getUrl())
+            && SonarCloudConnectionConfiguration.isCodeScanCloudAlias(params.getUrl());
+    return CompletableFuture.completedFuture(Map.of("isCloudConnection", isCloudConnection));
   }
 }
