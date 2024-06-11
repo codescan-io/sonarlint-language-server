@@ -21,14 +21,20 @@ package org.sonarsource.sonarlint.ls;
 
 import java.net.URI;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticCodeDescription;
+import org.eclipse.lsp4j.DiagnosticRelatedInformation;
 import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.commons.HotspotReviewStatus;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.core.commons.RuleType;
 import org.sonarsource.sonarlint.core.commons.VulnerabilityProbability;
@@ -79,7 +85,9 @@ public class DiagnosticPublisher {
       return;
     }
     if (!onlyHotspots) {
-      client.publishDiagnostics(createPublishDiagnosticsParams(f));
+      PublishDiagnosticsParams params = createPublishDiagnosticsParams(f);
+      client.publishDiagnostics(params);
+      client.publishCodeScanDiagnostics(params);
     }
     client.publishSecurityHotspots(createPublishSecurityHotspotsParams(f));
   }
@@ -93,8 +101,8 @@ public class DiagnosticPublisher {
     return prepareDiagnostic(severity, issue, entry.getKey(), false);
   }
 
-  public static Diagnostic prepareDiagnostic(DiagnosticSeverity severity, Issue issue, String entryKey, boolean ignoreSecondaryLocations) {
-    var diagnostic = new Diagnostic();
+  public static CodeScanDiagnostic prepareDiagnostic(DiagnosticSeverity severity, Issue issue, String entryKey, boolean ignoreSecondaryLocations) {
+    var diagnostic = new CodeScanDiagnostic();
 
     diagnostic.setSeverity(severity);
     var range = Utils.convert(issue);
@@ -103,6 +111,12 @@ public class DiagnosticPublisher {
     diagnostic.setMessage(message(issue, ignoreSecondaryLocations));
     setSource(issue, diagnostic);
     diagnostic.setData(getData(issue, entryKey));
+    diagnostic.setRuleType(issue.getType().toString());
+    if (issue.getType() == RuleType.SECURITY_HOTSPOT) {
+      issue.getVulnerabilityProbability().ifPresent(vp -> diagnostic.setVulnerabilityProbability(vp.toString()));
+    } else {
+      diagnostic.setIssueSeverity(issue.getSeverity().toString());
+    }
 
     return diagnostic;
   }
@@ -128,6 +142,22 @@ public class DiagnosticPublisher {
 
     public String getEntryKey() {
       return entryKey;
+    }
+  }
+
+  public static class CodeScanDiagnostic extends Diagnostic {
+    private String ruleType;
+    private String issueSeverity;
+    private String vulnerabilityProbability;
+
+    public void setRuleType(String ruleType) {
+      this.ruleType = ruleType;
+    }
+    public void setIssueSeverity(String issueSeverity) {
+      this.issueSeverity = issueSeverity;
+    }
+    public void setVulnerabilityProbability(String vulnerabilityProbability) {
+      this.vulnerabilityProbability = vulnerabilityProbability;
     }
   }
 
