@@ -9,7 +9,7 @@
   </parent>
   <groupId>org.sonarsource.sonarlint.ls</groupId>
   <artifactId>sonarlint-language-server</artifactId>
-  <version>2.20.1-CODESCAN</version>
+  <version>2.20.2-CODESCAN</version>
   <packaging>jar</packaging>
   <name>SonarLint Language Server</name>
   <description>SonarLint Language Server</description>
@@ -24,7 +24,7 @@
 
   <properties>
     <jdk.min.version>11</jdk.min.version>
-    <sonarlint.core.version>9.2.0-CODESCAN</sonarlint.core.version>
+    <sonarlint.core.version>9.2.1-CODESCAN</sonarlint.core.version>
     <sonar-plugin-api-impl.version>9.9.3.79811</sonar-plugin-api-impl.version>
     <!-- Version used by Xodus -->
     <kotlin.version>1.6.10</kotlin.version>
