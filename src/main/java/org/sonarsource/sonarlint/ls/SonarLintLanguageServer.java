@@ -272,8 +272,9 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
   }
 
   static SonarLintLanguageServer bySocket(int port, Collection<Path> analyzers) throws IOException {
-    var socket = new Socket("localhost", port);
-    return new SonarLintLanguageServer(socket.getInputStream(), socket.getOutputStream(), analyzers);
+    try (var socket = new Socket("localhost", port)) {
+      return new SonarLintLanguageServer(socket.getInputStream(), socket.getOutputStream(), analyzers);
+    }
   }
 
   static SonarLintLanguageServer byStdio(List<Path> analyzers) {
