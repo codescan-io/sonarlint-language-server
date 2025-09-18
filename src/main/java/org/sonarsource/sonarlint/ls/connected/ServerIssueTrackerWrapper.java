@@ -19,14 +19,19 @@
  */
 package org.sonarsource.sonarlint.ls.connected;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import org.sonarsource.sonarlint.core.serverapi.util.ServerApiUtils;
+import org.sonarsource.sonarlint.core.serverapi.proto.sonarqube.ws.Common.TextRange;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
 import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 import org.sonarsource.sonarlint.core.http.HttpClient;
 import org.sonarsource.sonarlint.core.issuetracking.CachingIssueTracker;
 import org.sonarsource.sonarlint.core.issuetracking.InMemoryIssueTrackerCache;
@@ -51,6 +56,7 @@ public class ServerIssueTrackerWrapper {
   private final CachingIssueTracker cachingIssueTracker;
   private final CachingIssueTracker cachingHotspotsTracker;
   private final org.sonarsource.sonarlint.core.tracking.ServerIssueTracker tracker;
+  private static final SonarLintLogger LOG = SonarLintLogger.get();
 
   ServerIssueTrackerWrapper(ConnectedSonarLintEngine engine, EndpointParams endpointParams,
     ProjectBinding projectBinding, Supplier<String> getReferenceBranchNameForFolder, HttpClient httpClient) {
@@ -68,6 +74,7 @@ public class ServerIssueTrackerWrapper {
   }
 
   public void matchAndTrack(String filePath, Collection<Issue> issues, IssueListener issueListener, boolean shouldFetchServerIssues) {
+    LOG.info("======Match and track, issue size: {}", issues.size());
     if (issues.isEmpty()) {
       issueTrackerCache.put(filePath, Collections.emptyList());
       return;
@@ -75,12 +82,17 @@ public class ServerIssueTrackerWrapper {
 
     cachingIssueTracker.matchAndTrackAsNew(filePath, toIssueTrackables(issues));
     cachingHotspotsTracker.matchAndTrackAsNew(filePath, toHotspotTrackables(issues));
+
     if (shouldFetchServerIssues) {
       tracker.update(endpointParams, httpClient, engine, projectBinding,
         Collections.singleton(filePath), getReferenceBranchNameForFolder.get());
     } else {
       tracker.update(engine, projectBinding, getReferenceBranchNameForFolder.get(), Collections.singleton(filePath));
     }
+
+    issueTrackerCache.getLiveOrFail(filePath).stream().forEach(it -> {
+      LOG.info("======Tracking Issue: {}, {}, {}", it.getRuleKey(), it.getLine(), it.isResolved());
+    });
 
     issueTrackerCache.getLiveOrFail(filePath).stream()
       .filter(not(Trackable::isResolved))
@@ -91,10 +103,47 @@ public class ServerIssueTrackerWrapper {
   }
 
   private static Collection<Trackable> toIssueTrackables(Collection<Issue> issues) {
-    return issues.stream()
+    issues.forEach(it -> LOG.info("======ITT issue: {} {} {} {} {}", it.getRuleKey(), it.getTextRange().getStartLine(), it.getTextRange().getStartLineOffset(), it.getTextRange().getEndLine(), it.getTextRange().getEndLineOffset()));
+    List<Trackable> itt = issues.stream()
       .filter(it -> it.getType() != RuleType.SECURITY_HOTSPOT)
-      .map(IssueTrackable::new).collect(Collectors.toList());
+      .map(ServerIssueTrackerWrapper::createIssueTrackable).collect(Collectors.toList());
+    itt.forEach(it -> LOG.info("======ITT post: {} {} {} {}", it.getRuleKey(), it.getLine(), it.getTextRange().getHash(), it.getLineHash()));
+    return itt;
+  }
 
+  private static IssueTrackable createIssueTrackable(Issue issue) {
+    try {
+      // Get file content to calculate line hash and text range hash
+      var inputFile = issue.getInputFile();
+      if (inputFile != null && issue.getStartLine() != null) {
+        var content = inputFile.contents();
+        var lines = content.split("\\r?\\n");
+        var lineIndex = issue.getStartLine() - 1; // Convert to 0-based index
+
+        if (lineIndex >= 0 && lineIndex < lines.length) {
+          var lineContent = lines[lineIndex];
+          
+          // Calculate text range content using existing utility if issue has text range
+          String textRangeContent = null;
+          if (issue.getStartLineOffset() != null && issue.getEndLineOffset() != null) {
+            var textRange = TextRange.newBuilder()
+              .setStartLine(issue.getStartLine())
+              .setStartOffset(issue.getStartLineOffset())
+              .setEndLine(issue.getEndLine())
+              .setEndOffset(issue.getEndLineOffset())
+              .build();
+            textRangeContent = ServerApiUtils.extractCodeSnippet(content, textRange);
+          }
+
+          return new IssueTrackable(issue, textRangeContent, lineContent);
+        }
+      }
+    } catch (IOException e) {
+      LOG.warn("Failed to read file content for issue tracking: {}", e.getMessage());
+    }
+
+    // Fallback to basic constructor if we can't get file content
+    return new IssueTrackable(issue);
   }
 
   private static Collection<Trackable> toHotspotTrackables(Collection<Issue> issues) {
