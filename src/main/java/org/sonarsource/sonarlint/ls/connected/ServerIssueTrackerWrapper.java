@@ -138,7 +138,6 @@ public class ServerIssueTrackerWrapper {
       LOG.warn("Failed to read file content for issue tracking: {}", e.getMessage());
     }
 
-    // Fallback to basic constructor if we can't get file content
     return new IssueTrackable(issue);
   }
 }
