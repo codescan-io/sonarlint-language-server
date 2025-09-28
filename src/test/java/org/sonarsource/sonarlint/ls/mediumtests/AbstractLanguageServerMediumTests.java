@@ -175,7 +175,7 @@ public abstract class AbstractLanguageServerMediumTests {
       executor.submit(() -> cmd.execute(clonedArgs));
       executor.shutdown();
     } catch (Exception e) {
-      e.printStackTrace();
+      System.err.println(e.getMessage());
       future.get(1, TimeUnit.SECONDS);
       if (!future.isDone()) {
         future.cancel(true);
@@ -530,7 +530,7 @@ public abstract class AbstractLanguageServerMediumTests {
     try {
       Thread.sleep(200);
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      System.err.println(e.getMessage());
     }
   }
 
