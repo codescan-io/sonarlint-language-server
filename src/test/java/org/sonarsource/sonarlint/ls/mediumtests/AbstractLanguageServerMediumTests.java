@@ -502,6 +502,10 @@ public abstract class AbstractLanguageServerMediumTests {
     }
 
     @Override
+    public void updateSeverityLabels(UpdateSeverityLabelsParams labels) {
+    }
+
+    @Override
     public void needCompilationDatabase() {
       this.needCompilationDatabaseCalls.incrementAndGet();
     }
