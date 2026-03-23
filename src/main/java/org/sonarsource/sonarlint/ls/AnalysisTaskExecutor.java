@@ -79,6 +79,7 @@ import static java.util.stream.Collectors.partitioningBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
+import static org.sonarsource.sonarlint.ls.settings.SettingsManager.*;
 import static org.sonarsource.sonarlint.ls.util.Utils.pluralize;
 
 public class AnalysisTaskExecutor {
@@ -557,7 +558,12 @@ public class AnalysisTaskExecutor {
         codescanProps.put("sonar.login", Objects.requireNonNullElse(serverConnectionSettings.getToken(), ""));
       }
     }
-    codescanProps.put("codescan.ide.type", "VSCode");
+
+    String ideType = settings.getIdeType();
+    if (!VSCODE.equals(ideType) && !CURSOR.equals(ideType)) {
+      ideType = VSCODE;
+    }
+    codescanProps.put("codescan.ide.type", ideType);
     return codescanProps;
   }
 

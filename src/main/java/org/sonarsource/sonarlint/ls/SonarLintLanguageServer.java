@@ -141,6 +141,7 @@ import static org.sonarsource.sonarlint.ls.CommandManager.SONARLINT_OPEN_RULE_DE
 import static org.sonarsource.sonarlint.ls.CommandManager.SONARLINT_SHOW_SECURITY_HOTSPOT_FLOWS;
 import static org.sonarsource.sonarlint.ls.SonarLintExtendedLanguageClient.ConnectionCheckResult.failure;
 import static org.sonarsource.sonarlint.ls.SonarLintExtendedLanguageClient.ConnectionCheckResult.success;
+import static org.sonarsource.sonarlint.ls.settings.SettingsManager.IDE_TYPE;
 import static org.sonarsource.sonarlint.ls.util.Utils.hotspotStatusOfTitle;
 import static org.sonarsource.sonarlint.ls.util.Utils.hotspotStatusValueOfHotspotReviewStatus;
 
@@ -300,6 +301,8 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
         options = Collections.emptyMap();
       }
 
+      var ideType = (String) options.get(IDE_TYPE);
+      settingsManager.setIdeType(ideType);
       var productKey = (String) options.get("productKey");
       // deprecated, will be ignored when productKey present
       var telemetryStorage = (String) options.get("telemetryStorage");
