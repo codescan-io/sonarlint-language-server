@@ -874,4 +874,18 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
             && SonarCloudConnectionConfiguration.isCodeScanCloudAlias(params.getUrl());
     return CompletableFuture.completedFuture(Map.of("isCloudConnection", isCloudConnection));
   }
+
+  @Override
+  public CompletableFuture<Map<String, Boolean>> checkIfCrossFileAnalysisIsEnabled(FileParam params) {
+    var binding = bindingManager.getBinding(create(params.getFileUri())).orElse(null);
+    if (binding == null) {
+      return CompletableFuture.completedFuture(Map.of("isCrossFileAnalysisEnabled", false));
+    }
+    try {
+      boolean isEnabled = binding.getEngine().checkIfCrossFileAnalysisIsEnabled(binding.getBinding());
+      return CompletableFuture.completedFuture(Map.of("isCrossFileAnalysisEnabled", isEnabled));
+    } catch (RuntimeException e) {
+      return CompletableFuture.completedFuture(Map.of("isCrossFileAnalysisEnabled", false));
+    }
+  }
 }

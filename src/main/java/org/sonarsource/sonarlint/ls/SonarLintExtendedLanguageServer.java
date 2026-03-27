@@ -542,4 +542,17 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
   }
   @JsonRequest("codescan/checkIfConnectionIsCloud")
   CompletableFuture<Map<String, Boolean>> checkIfConnectionIsCloud(CheckIfCloudConnectionParams params);
+  class FileParam{
+    private final String fileUri;
+
+    public FileParam(String fileUri) {
+      this.fileUri = fileUri;
+    }
+
+    public String getFileUri() {
+      return fileUri;
+    }
+  }
+  @JsonNotification("codescan/checkIfCrossFileAnalysisIsEnabled")
+  CompletableFuture<Map<String, Boolean>> checkIfCrossFileAnalysisIsEnabled(FileParam params);
 }
