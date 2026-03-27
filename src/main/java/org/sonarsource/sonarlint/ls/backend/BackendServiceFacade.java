@@ -19,7 +19,8 @@
  */
 package org.sonarsource.sonarlint.ls.backend;
 
-import static org.sonarsource.sonarlint.ls.settings.SettingsManager.*;
+import static org.sonarsource.sonarlint.ls.settings.SettingsManager.VSCODE;
+import static org.sonarsource.sonarlint.ls.settings.SettingsManager.CURSOR;
 
 import java.util.List;
 import java.util.Map;
