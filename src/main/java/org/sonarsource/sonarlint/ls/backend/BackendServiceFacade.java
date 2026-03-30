@@ -19,6 +19,9 @@
  */
 package org.sonarsource.sonarlint.ls.backend;
 
+import static org.sonarsource.sonarlint.ls.settings.SettingsManager.VSCODE;
+import static org.sonarsource.sonarlint.ls.settings.SettingsManager.CURSOR;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -101,13 +104,14 @@ public class BackendServiceFacade {
     initParams.setSonarQubeConnections(sqConnections);
     initParams.setSonarCloudConnections(scConnections);
     initParams.setStandaloneRuleConfigByKey(this.settingsManager.getStandaloneRuleConfigByKey());
-    backend.initialize(toInitParams(initParams));
+    backend.initialize(toInitParams(initParams, settingsManager.getIdeType()));
     backend.addConfigurationScopes(new DidAddConfigurationScopesParams(List.of(rootConfigurationScope)));
   }
 
-  private static InitializeParams toInitParams(BackendInitParams initParams) {
+  private static InitializeParams toInitParams(BackendInitParams initParams, String ideType) {
+    String ideName = VSCODE.equals(ideType) ? "Visual Studio Code" : CURSOR;
     return new InitializeParams(
-      new ClientInfoDto("Visual Studio Code", initParams.getTelemetryProductKey(), initParams.getUserAgent()),
+      new ClientInfoDto(ideName, initParams.getTelemetryProductKey(), initParams.getUserAgent()),
       new FeatureFlagsDto(true, true, true, true, initParams.isEnableSecurityHotspots()),
       initParams.getStorageRoot(),
       null,

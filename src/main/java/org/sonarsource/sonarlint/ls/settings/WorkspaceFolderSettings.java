@@ -45,14 +45,21 @@ public class WorkspaceFolderSettings {
   private final String connectionId;
   private final String projectKey;
   private final String pathToCompileCommands;
+  private final String ideType;
+
+  public WorkspaceFolderSettings(@Nullable String connectionId, @Nullable String projectKey, Map<String, String> analyzerProperties,
+    @Nullable String testFilePattern, @Nullable String pathToCompileCommands) {
+    this(connectionId, projectKey, analyzerProperties, testFilePattern, pathToCompileCommands, null);
+  }
 
   public WorkspaceFolderSettings(@Nullable String connectionId, @Nullable String projectKey, Map<String, String> analyzerProperties, @Nullable String testFilePattern,
-    @Nullable String pathToCompileCommands) {
+    @Nullable String pathToCompileCommands, @Nullable String ideType) {
     this.connectionId = connectionId;
     this.projectKey = projectKey;
     this.analyzerProperties = analyzerProperties;
     this.testFilePattern = testFilePattern;
     this.pathToCompileCommands = pathToCompileCommands;
+    this.ideType = ideType;
     this.testMatcher = testFilePattern != null ? FileSystems.getDefault().getPathMatcher("glob:" + testFilePattern) : (p -> false);
   }
 
@@ -79,13 +86,18 @@ public class WorkspaceFolderSettings {
     return projectKey;
   }
 
+  @CheckForNull
+  public String getIdeType() {
+    return ideType;
+  }
+
   public boolean hasBinding() {
     return StringUtils.isNotBlank(connectionId) && StringUtils.isNotBlank(projectKey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(connectionId, projectKey, analyzerProperties, testFilePattern, pathToCompileCommands);
+    return Objects.hash(connectionId, projectKey, analyzerProperties, testFilePattern, pathToCompileCommands, ideType);
   }
 
   @Override
@@ -101,7 +113,7 @@ public class WorkspaceFolderSettings {
     }
     var other = (WorkspaceFolderSettings) obj;
     return Objects.equals(connectionId, other.connectionId) && Objects.equals(projectKey, other.projectKey) && Objects.equals(analyzerProperties, other.analyzerProperties)
-      && Objects.equals(testFilePattern, other.testFilePattern) && Objects.equals(pathToCompileCommands, other.pathToCompileCommands);
+      && Objects.equals(testFilePattern, other.testFilePattern) && Objects.equals(pathToCompileCommands, other.pathToCompileCommands) && Objects.equals(ideType, other.ideType);
   }
 
   @Override

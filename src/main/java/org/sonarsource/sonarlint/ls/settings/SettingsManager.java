@@ -77,6 +77,10 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
   private static final String SHOW_VERBOSE_LOGS = "showVerboseLogs";
   private static final String PATH_TO_NODE_EXECUTABLE = "pathToNodeExecutable";
   private static final String PATH_TO_COMPILE_COMMANDS = "pathToCompileCommands";
+  public static final String IDE_TYPE = "ideType";
+  public static final String VSCODE = "VSCode";
+  public static final String CURSOR = "Cursor";
+  private String ideType;
 
   private static final String WORKSPACE_FOLDER_VARIABLE = "${workspaceFolder}";
 
@@ -126,6 +130,18 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
       interrupted(e);
     }
     throw new IllegalStateException("Unable to get settings in time");
+  }
+
+  public void setIdeType(@Nullable String ideType) {
+    if (CURSOR.equals(ideType) || VSCODE.equals(ideType)) {
+      this.ideType = ideType;
+    } else {
+      this.ideType = VSCODE;
+    }
+  }
+
+  public String getIdeType() {
+    return ideType;
   }
 
   public Map<String, StandaloneRuleConfigDto> getStandaloneRuleConfigByKey() {
@@ -392,6 +408,7 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
     var analyzerProperties = (Map<String, String>) params.getOrDefault(ANALYZER_PROPERTIES, Map.of());
     String connectionId = null;
     String projectKey = null;
+    String detectedIdeType = getIdeType();
     @SuppressWarnings("unchecked")
     var connectedModeMap = (Map<String, Object>) params.getOrDefault("connectedMode", Collections.emptyMap());
     if (connectedModeMap.containsKey(PROJECT)) {
@@ -417,7 +434,8 @@ public class SettingsManager implements WorkspaceFolderLifecycleListener {
       }
     }
     pathToCompileCommands = substituteWorkspaceFolderVariable(workspaceFolderUri, pathToCompileCommands);
-    return new WorkspaceFolderSettings(connectionId, projectKey, analyzerProperties, testFilePattern, pathToCompileCommands);
+    return new WorkspaceFolderSettings(connectionId, projectKey, analyzerProperties, testFilePattern, pathToCompileCommands,
+            detectedIdeType);
   }
 
   @CheckForNull
