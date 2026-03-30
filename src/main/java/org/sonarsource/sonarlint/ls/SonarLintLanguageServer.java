@@ -881,7 +881,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
        var binding = bindingManager.getBinding(create(params.getFileUri())).orElse(null);
         if (binding == null) {
             return CompletableFuture.completedFuture(Map.of("isCrossFileAnalysisEnabled", false));
-      }
+        }
       boolean isEnabled = binding.getEngine().checkIfCrossFileAnalysisIsEnabled(binding.getBinding());
       return CompletableFuture.completedFuture(Map.of("isCrossFileAnalysisEnabled", isEnabled));
     } catch (RuntimeException e) {
