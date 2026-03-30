@@ -57,7 +57,7 @@ public class ExitingInputStream extends InputStream {
       try {
         sonarLintLanguageServer.shutdown().get(5, TimeUnit.SECONDS);
       } catch (Exception e) {
-        e.printStackTrace(System.err);
+        System.err.println(e.getMessage());
       }
 
       System.exit(0);
