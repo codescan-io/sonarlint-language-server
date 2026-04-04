@@ -71,6 +71,7 @@ import org.eclipse.lsp4j.NotebookSelectorCell;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.ServerInfo;
 import org.eclipse.lsp4j.SetTraceParams;
+import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
 import org.eclipse.lsp4j.WorkDoneProgressCancelParams;
@@ -890,5 +891,36 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
     } catch (RuntimeException e) {
       return CompletableFuture.completedFuture(Map.of("isCrossFileAnalysisEnabled", false));
     }
+  }
+  @Override
+  public void didOpenWithCrossFileAnalysis(CrossFileAnalysisParams params) {
+    var uri = create(params.getFileOpened().getUri());
+    client.isOpenInEditor(uri.toString()).thenAccept(isOpen -> {
+    if (Boolean.TRUE.equals(isOpen)) {
+         // var parent = params.getFileOpened();
+       var filesToAnalyze = toDependencyFiles(params.getDependencyFiles());
+       //   var parentFile =  new VersionedOpenFile(create(parent.getUri()), parent.getLanguageId(), parent.getVersion(), parent.getText(), filesToAnalyze);
+       var file = openFilesCache.didOpenWithCrossFile(uri, params.getFileOpened().getLanguageId(), params.getFileOpened().getText(), params.getFileOpened().getVersion(), filesToAnalyze);
+       analysisScheduler.didOpen(file);
+       taintIssuesUpdater.updateTaintIssuesAsync(uri);
+    } else {
+         SonarLintLogger.get().debug("Skipping analysis for preview of file {}", uri);
+    }
+    });
+  }
+  @Override
+  public void didChangeWithCrossFileAnalysis(CrossFileAnalysisParams params) {
+    var parent = params.getFileOpened();
+    var filesToAnalyze = toDependencyFiles(params.getDependencyFiles());
+    //var parentFile =  new VersionedOpenFile(create(parent.getUri()), parent.getLanguageId(), parent.getVersion(), parent.getText(), filesToAnalyze);
+    var uri = create(params.getFileOpened().getUri());
+    openFilesCache.didChangeWithCrossFile(uri, params.getFileOpened().getText(), params.getFileOpened().getVersion(), filesToAnalyze);
+    analysisScheduler.didChange(uri);
+  }
+  private List<VersionedOpenFile> toDependencyFiles(List<TextDocumentItem> documents) {
+    if( documents == null) return null;
+    return documents.stream()
+              .map(d -> new VersionedOpenFile(create(d.getUri()), d.getLanguageId(), d.getVersion(), d.getText()))
+              .collect(Collectors.toList());
   }
 }

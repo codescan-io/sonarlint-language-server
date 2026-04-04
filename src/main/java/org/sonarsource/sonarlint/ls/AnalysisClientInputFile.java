@@ -26,6 +26,7 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
@@ -38,13 +39,15 @@ public class AnalysisClientInputFile implements ClientInputFile {
   private final Language sqLanguage;
   private final String relativePath;
   private final boolean isTest;
+  private final List<ClientInputFile> dependencyFiles;;
 
-  public AnalysisClientInputFile(URI uri, String relativePath, String content, boolean isTest, @Nullable String clientLanguageId) {
+  public AnalysisClientInputFile(URI uri, String relativePath, String content, boolean isTest, @Nullable String clientLanguageId, List<ClientInputFile> dependencyFiles) {
     this.relativePath = relativePath;
     this.fileUri = uri;
     this.content = content;
     this.isTest = isTest;
     this.sqLanguage = toSqLanguage(clientLanguageId);
+    this.dependencyFiles = dependencyFiles;
   }
 
   @Override
@@ -128,5 +131,9 @@ public class AnalysisClientInputFile implements ClientInputFile {
         // Other supported languages map to the same key as the one used in CodeScan
         return Language.forKey(clientLanguageId).orElse(null);
     }
+  }
+  @Override
+  public List<ClientInputFile> getDependencyFiles(){
+    return this.dependencyFiles;
   }
 }

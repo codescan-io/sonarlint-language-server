@@ -21,6 +21,7 @@ package org.sonarsource.sonarlint.ls.file;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,11 +65,38 @@ public class OpenFilesCache {
     return file;
   }
 
+  /**
+   * 'aura components' vs-code extension sets languageId as html for aura-components with file extensions ->
+   * .app, .cmp, .design, .evt, .intf, .auradoc or .tokens
+   * reset languageId as visualforce for these aura components
+   */
+  public VersionedOpenFile didOpenWithCrossFile(URI fileUri, String languageId, String fileContent, int version, List<VersionedOpenFile> childrens) {
+    var file = new VersionedOpenFile(fileUri, languageId, version, fileContent, childrens);
+    openFilesPerFileURI.put(fileUri, file);
+
+    // Detect VF files if HTML
+    if (languageId.equals("html")) {
+      for (var fileSuffix : Language.VF.getDefaultFileSuffixes()) {
+        if (fileUri.getPath().endsWith(fileSuffix)) {
+          var vfFile = new VersionedOpenFile(fileUri, "visualforce", version, fileContent);
+          openFilesPerFileURI.put(fileUri, vfFile);
+          break;
+        }
+      }
+    }
+    return file;
+ }
   public void didChange(URI fileUri, String fileContent, int version) {
     if (!openFilesPerFileURI.containsKey(fileUri)) {
       lsLogOutput.warn(format("Illegal state. File '%s' is reported changed but we missed the open notification", fileUri));
     }
     openFilesPerFileURI.computeIfPresent(fileUri, (uri, previous) -> new VersionedOpenFile(uri, previous.getLanguageId(), version, fileContent));
+  }
+  public void didChangeWithCrossFile(URI fileUri, String fileContent, int version, List<VersionedOpenFile> childrens) {
+    if (!openFilesPerFileURI.containsKey(fileUri)) {
+      lsLogOutput.warn(format("Illegal state. File '%s' is reported changed but we missed the open notification", fileUri));
+    }
+    openFilesPerFileURI.computeIfPresent(fileUri, (uri, previous) -> new VersionedOpenFile(uri, previous.getLanguageId(), version, fileContent, childrens));
   }
 
   public void didClose(URI fileUri) {

@@ -20,6 +20,7 @@
 package org.sonarsource.sonarlint.ls.file;
 
 import java.net.URI;
+import java.util.List;
 import javax.annotation.concurrent.Immutable;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
@@ -32,12 +33,16 @@ public class VersionedOpenFile {
   private final String languageId;
   private final int version;
   private final String content;
-
+  private List<VersionedOpenFile> dependencyFiles;
   public VersionedOpenFile(URI uri, String languageId, int version, String content) {
     this.uri = uri;
     this.languageId = languageId;
     this.version = version;
     this.content = content;
+  }
+  public VersionedOpenFile(URI uri, String languageId, int version, String content, List<VersionedOpenFile> dependencyFiles) {
+    this(uri, languageId,version,content);
+    this.dependencyFiles = dependencyFiles;
   }
 
   public URI getUri() {
@@ -69,4 +74,7 @@ public class VersionedOpenFile {
     return "c".equals(languageId) || "cpp".equals(languageId);
   }
 
+  public List<VersionedOpenFile> getDependencyFiles() {
+    return dependencyFiles;
+  }
 }

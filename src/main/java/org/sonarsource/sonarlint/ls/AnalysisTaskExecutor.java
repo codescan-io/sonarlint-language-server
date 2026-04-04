@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -543,8 +544,24 @@ public class AnalysisTaskExecutor {
       .addInputFiles(
         new AnalysisClientInputFile(uri, FileUtils.getFileRelativePath(baseDir, uri), openFile.getContent(),
           fileTypeClassifier.isTest(settings, uri, openFile.isJava(), () -> ofNullable(javaConfigs.get(uri))),
-          openFile.getLanguageId())));
+          openFile.getLanguageId(), buildDependencyInputFiles(openFile,baseDir,settings,javaConfigs))));
     return configurationBuilder;
+  }
+
+  private List<ClientInputFile> buildDependencyInputFiles(VersionedOpenFile openFile, Path baseDir, WorkspaceFolderSettings settings, Map<URI, GetJavaConfigResponse> javaConfigs) {
+    List<VersionedOpenFile> dependencies = openFile.getDependencyFiles();
+    if (dependencies == null) {
+      return null;
+    }
+
+    List<ClientInputFile> dependencyInputFiles = new LinkedList<>();
+    for (var dependency : dependencies) {
+       dependencyInputFiles.add(new AnalysisClientInputFile(dependency.getUri(),
+               FileUtils.getFileRelativePath(baseDir, dependency.getUri()), dependency.getContent(),
+               fileTypeClassifier.isTest(settings, dependency.getUri(), dependency.isJava(),
+                      () -> ofNullable(javaConfigs.get(dependency.getUri()))), dependency.getLanguageId(), null));
+    }
+    return dependencyInputFiles;
   }
 
   private Map<String, String> getCodeScanProperties(WorkspaceFolderSettings settings) {

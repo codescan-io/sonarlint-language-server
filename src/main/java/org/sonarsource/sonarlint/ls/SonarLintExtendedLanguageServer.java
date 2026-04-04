@@ -555,4 +555,26 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
   }
   @JsonNotification("codescan/checkIfCrossFileAnalysisIsEnabled")
   CompletableFuture<Map<String, Boolean>> checkIfCrossFileAnalysisIsEnabled(FileParam params);
+
+  class CrossFileAnalysisParams {
+    private final TextDocumentItem fileOpened;
+    private final List<TextDocumentItem> dependencyFiles;
+
+    public CrossFileAnalysisParams(TextDocumentItem fileOpened, List<TextDocumentItem> dependencyFiles) {
+      this.fileOpened = fileOpened;
+      this.dependencyFiles = dependencyFiles;
+    }
+
+    public TextDocumentItem getFileOpened() {
+      return fileOpened;
+    }
+
+    public List<TextDocumentItem> getDependencyFiles() {
+      return dependencyFiles;
+    }
+  }
+  @JsonNotification("codescan/didOpenWithCrossFileAnalysis")
+  void didOpenWithCrossFileAnalysis(CrossFileAnalysisParams params);
+  @JsonNotification("codescan/didChangeWithCrossFileAnalysis")
+  void didChangeWithCrossFileAnalysis(CrossFileAnalysisParams params);
 }
