@@ -897,9 +897,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
     var uri = create(params.getFileOpened().getUri());
     client.isOpenInEditor(uri.toString()).thenAccept(isOpen -> {
     if (Boolean.TRUE.equals(isOpen)) {
-         // var parent = params.getFileOpened();
        var filesToAnalyze = toDependencyFiles(params.getDependencyFiles());
-       //   var parentFile =  new VersionedOpenFile(create(parent.getUri()), parent.getLanguageId(), parent.getVersion(), parent.getText(), filesToAnalyze);
        var file = openFilesCache.didOpenWithCrossFile(uri, params.getFileOpened().getLanguageId(), params.getFileOpened().getText(), params.getFileOpened().getVersion(), filesToAnalyze);
        analysisScheduler.didOpen(file);
        taintIssuesUpdater.updateTaintIssuesAsync(uri);
@@ -910,9 +908,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
   }
   @Override
   public void didChangeWithCrossFileAnalysis(CrossFileAnalysisParams params) {
-    var parent = params.getFileOpened();
     var filesToAnalyze = toDependencyFiles(params.getDependencyFiles());
-    //var parentFile =  new VersionedOpenFile(create(parent.getUri()), parent.getLanguageId(), parent.getVersion(), parent.getText(), filesToAnalyze);
     var uri = create(params.getFileOpened().getUri());
     openFilesCache.didChangeWithCrossFile(uri, params.getFileOpened().getText(), params.getFileOpened().getVersion(), filesToAnalyze);
     analysisScheduler.didChange(uri);
