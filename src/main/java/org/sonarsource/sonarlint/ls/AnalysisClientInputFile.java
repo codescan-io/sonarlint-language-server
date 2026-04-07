@@ -39,15 +39,15 @@ public class AnalysisClientInputFile implements ClientInputFile {
   private final Language sqLanguage;
   private final String relativePath;
   private final boolean isTest;
-  private final List<ClientInputFile> dependencyFiles;;
+  private final List<ClientInputFile> referenceFiles;;
 
-  public AnalysisClientInputFile(URI uri, String relativePath, String content, boolean isTest, @Nullable String clientLanguageId, List<ClientInputFile> dependencyFiles) {
+  public AnalysisClientInputFile(URI uri, String relativePath, String content, boolean isTest, @Nullable String clientLanguageId, List<ClientInputFile> referenceFiles) {
     this.relativePath = relativePath;
     this.fileUri = uri;
     this.content = content;
     this.isTest = isTest;
     this.sqLanguage = toSqLanguage(clientLanguageId);
-    this.dependencyFiles = dependencyFiles;
+    this.referenceFiles = referenceFiles;
   }
 
   @Override
@@ -133,7 +133,7 @@ public class AnalysisClientInputFile implements ClientInputFile {
     }
   }
   @Override
-  public List<ClientInputFile> getDependencyFiles(){
-    return this.dependencyFiles;
+  public List<ClientInputFile> getReferenceFiles(){
+    return this.referenceFiles;
   }
 }

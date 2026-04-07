@@ -897,8 +897,8 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
     var uri = create(params.getFileOpened().getUri());
     client.isOpenInEditor(uri.toString()).thenAccept(isOpen -> {
     if (Boolean.TRUE.equals(isOpen)) {
-       var filesToAnalyze = toDependencyFiles(params.getDependencyFiles());
-       var file = openFilesCache.didOpenWithCrossFile(uri, params.getFileOpened().getLanguageId(), params.getFileOpened().getText(), params.getFileOpened().getVersion(), filesToAnalyze);
+       var referenceFiles = toReferenceFiles(params.getDependencyFiles());
+       var file = openFilesCache.didOpenWithCrossFile(uri, params.getFileOpened().getLanguageId(), params.getFileOpened().getText(), params.getFileOpened().getVersion(), referenceFiles);
        analysisScheduler.didOpen(file);
        taintIssuesUpdater.updateTaintIssuesAsync(uri);
     } else {
@@ -908,13 +908,13 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
   }
   @Override
   public void didChangeWithCrossFileAnalysis(CrossFileAnalysisParams params) {
-    var filesToAnalyze = toDependencyFiles(params.getDependencyFiles());
+    var referenceFiles = toReferenceFiles(params.getDependencyFiles());
     var uri = create(params.getFileOpened().getUri());
-    openFilesCache.didChangeWithCrossFile(uri, params.getFileOpened().getText(), params.getFileOpened().getVersion(), filesToAnalyze);
+    openFilesCache.didChangeWithCrossFile(uri, params.getFileOpened().getText(), params.getFileOpened().getVersion(), referenceFiles);
     analysisScheduler.didChange(uri);
   }
-  private List<VersionedOpenFile> toDependencyFiles(List<TextDocumentItem> documents) {
-    if( documents == null) return null;
+  private List<VersionedOpenFile> toReferenceFiles(List<TextDocumentItem> documents) {
+    if (documents == null) return null;
     return documents.stream()
               .map(d -> new VersionedOpenFile(create(d.getUri()), d.getLanguageId(), d.getVersion(), d.getText()))
               .collect(Collectors.toList());

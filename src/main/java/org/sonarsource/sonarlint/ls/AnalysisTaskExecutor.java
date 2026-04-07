@@ -549,7 +549,7 @@ public class AnalysisTaskExecutor {
   }
 
   private List<ClientInputFile> buildDependencyInputFiles(VersionedOpenFile openFile, Path baseDir, WorkspaceFolderSettings settings, Map<URI, GetJavaConfigResponse> javaConfigs) {
-    List<VersionedOpenFile> dependencies = openFile.getDependencyFiles();
+    List<VersionedOpenFile> dependencies = openFile.getReferenceFiles();
     if (dependencies == null) {
       return null;
     }

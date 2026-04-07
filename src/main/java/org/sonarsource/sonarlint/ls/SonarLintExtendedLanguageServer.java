@@ -553,7 +553,7 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
       return fileUri;
     }
   }
-  @JsonNotification("codescan/checkIfCrossFileAnalysisIsEnabled")
+  @JsonRequest("codescan/checkIfCrossFileAnalysisIsEnabled")
   CompletableFuture<Map<String, Boolean>> checkIfCrossFileAnalysisIsEnabled(FileParam params);
 
   class CrossFileAnalysisParams {

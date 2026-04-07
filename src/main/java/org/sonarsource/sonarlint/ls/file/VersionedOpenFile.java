@@ -33,16 +33,16 @@ public class VersionedOpenFile {
   private final String languageId;
   private final int version;
   private final String content;
-  private List<VersionedOpenFile> dependencyFiles;
+  private List<VersionedOpenFile> referenceFiles;
   public VersionedOpenFile(URI uri, String languageId, int version, String content) {
     this.uri = uri;
     this.languageId = languageId;
     this.version = version;
     this.content = content;
   }
-  public VersionedOpenFile(URI uri, String languageId, int version, String content, List<VersionedOpenFile> dependencyFiles) {
+  public VersionedOpenFile(URI uri, String languageId, int version, String content, List<VersionedOpenFile> referenceFiles) {
     this(uri, languageId,version,content);
-    this.dependencyFiles = dependencyFiles;
+    this.referenceFiles = referenceFiles;
   }
 
   public URI getUri() {
@@ -74,7 +74,7 @@ public class VersionedOpenFile {
     return "c".equals(languageId) || "cpp".equals(languageId);
   }
 
-  public List<VersionedOpenFile> getDependencyFiles() {
-    return dependencyFiles;
+  public List<VersionedOpenFile> getReferenceFiles() {
+    return referenceFiles;
   }
 }
