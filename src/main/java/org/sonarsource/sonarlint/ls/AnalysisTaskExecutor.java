@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -554,7 +553,7 @@ public class AnalysisTaskExecutor {
       return null;
     }
 
-    List<ClientInputFile> dependencyInputFiles = new LinkedList<>();
+    List<ClientInputFile> dependencyInputFiles = new ArrayList<>(dependencies.size());
     for (var dependency : dependencies) {
        dependencyInputFiles.add(new AnalysisClientInputFile(dependency.getUri(),
                FileUtils.getFileRelativePath(baseDir, dependency.getUri()), dependency.getContent(),
