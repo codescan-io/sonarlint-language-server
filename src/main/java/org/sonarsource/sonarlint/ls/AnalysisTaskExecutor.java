@@ -376,8 +376,10 @@ public class AnalysisTaskExecutor {
         checkCanceled(task, progressFacade);
         filesSuccessfullyAnalyzed.remove(fileUri);
         var file = filesToAnalyze.get(fileUri);
-        issuesCache.analysisFailed(file);
-        securityHotspotsCache.analysisFailed(file);
+        if (file != null) {
+          issuesCache.analysisFailed(file);
+          securityHotspotsCache.analysisFailed(file);
+        }
       });
 
     if (!filesSuccessfullyAnalyzed.isEmpty()) {
