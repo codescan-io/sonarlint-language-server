@@ -577,4 +577,6 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
   void didOpenWithCrossFileAnalysis(CrossFileAnalysisParams params);
   @JsonNotification("codescan/didChangeWithCrossFileAnalysis")
   void didChangeWithCrossFileAnalysis(CrossFileAnalysisParams params);
+  @JsonRequest("codescan/getAvailableCrossFileRuleKey")
+  CompletableFuture<Map<String, String>> getAvailableCrossFileAnalysisRuleKey(FileParam params);
 }

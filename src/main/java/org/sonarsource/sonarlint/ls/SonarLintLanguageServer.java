@@ -919,4 +919,19 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
               .map(d -> new VersionedOpenFile(create(d.getUri()), d.getLanguageId(), d.getVersion(), d.getText()))
               .collect(Collectors.toList());
   }
+
+  @Override
+  public CompletableFuture<Map<String, String>>  getAvailableCrossFileAnalysisRuleKey(FileParam params){
+    try {
+      var binding = bindingManager.getBinding(create(params.getFileUri())).orElse(null);
+      if (binding == null) {
+              return CompletableFuture.completedFuture(Map.of("crossFileAnalysisRuleKey", ""));
+      }
+          String availableCrossFileAnalysisRuleKey = binding.getEngine().getAvailableCrossFileAnalysisRuleKey(binding.getBinding());
+          return CompletableFuture.completedFuture(Map.of("crossFileAnalysisRuleKey", availableCrossFileAnalysisRuleKey));
+      } catch (RuntimeException e) {
+          return CompletableFuture.completedFuture(Map.of("crossFileAnalysisRuleKey", ""));
+      }
+  }
+
 }
