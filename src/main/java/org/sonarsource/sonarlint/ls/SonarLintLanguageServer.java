@@ -897,7 +897,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
     var uri = create(params.getFileOpened().getUri());
     client.isOpenInEditor(uri.toString()).thenAccept(isOpen -> {
     if (Boolean.TRUE.equals(isOpen)) {
-       var referenceFiles = toReferenceFiles(params.getDependencyFiles());
+       var referenceFiles = toReferenceFiles(params.getReferenceFiles());
        var file = openFilesCache.didOpenWithCrossFile(uri, params.getFileOpened().getLanguageId(), params.getFileOpened().getText(), params.getFileOpened().getVersion(), referenceFiles);
        analysisScheduler.didOpen(file);
        taintIssuesUpdater.updateTaintIssuesAsync(uri);
@@ -908,7 +908,7 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
   }
   @Override
   public void didChangeWithCrossFileAnalysis(CrossFileAnalysisParams params) {
-    var referenceFiles = toReferenceFiles(params.getDependencyFiles());
+    var referenceFiles = toReferenceFiles(params.getReferenceFiles());
     var uri = create(params.getFileOpened().getUri());
     openFilesCache.didChangeWithCrossFile(uri, params.getFileOpened().getText(), params.getFileOpened().getVersion(), referenceFiles);
     analysisScheduler.didChange(uri);

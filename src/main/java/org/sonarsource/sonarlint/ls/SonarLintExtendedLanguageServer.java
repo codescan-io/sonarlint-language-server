@@ -558,19 +558,19 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
 
   class CrossFileAnalysisParams {
     private final TextDocumentItem fileOpened;
-    private final List<TextDocumentItem> dependencyFiles;
+    private final List<TextDocumentItem> referenceFiles;
 
-    public CrossFileAnalysisParams(TextDocumentItem fileOpened, List<TextDocumentItem> dependencyFiles) {
+    public CrossFileAnalysisParams(TextDocumentItem fileOpened, List<TextDocumentItem> referenceFiles) {
       this.fileOpened = fileOpened;
-      this.dependencyFiles = dependencyFiles;
+      this.referenceFiles = referenceFiles;
     }
 
     public TextDocumentItem getFileOpened() {
       return fileOpened;
     }
 
-    public List<TextDocumentItem> getDependencyFiles() {
-      return dependencyFiles;
+    public List<TextDocumentItem> getReferenceFiles() {
+      return referenceFiles;
     }
   }
   @JsonNotification("codescan/didOpenWithCrossFileAnalysis")
