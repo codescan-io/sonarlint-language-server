@@ -925,13 +925,13 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
     try {
       var binding = bindingManager.getBinding(create(params.getFileUri())).orElse(null);
       if (binding == null) {
-              return CompletableFuture.completedFuture(Map.of("crossFileAnalysisRuleKey", ""));
+        return CompletableFuture.completedFuture(Map.of("crossFileAnalysisRuleKey", ""));
       }
-          String availableCrossFileAnalysisRuleKey = binding.getEngine().getAvailableCrossFileAnalysisRuleKey(binding.getBinding());
-          return CompletableFuture.completedFuture(Map.of("crossFileAnalysisRuleKey", availableCrossFileAnalysisRuleKey));
-      } catch (RuntimeException e) {
-          return CompletableFuture.completedFuture(Map.of("crossFileAnalysisRuleKey", ""));
-      }
+      String availableCrossFileAnalysisRuleKey = binding.getEngine().getAvailableCrossFileAnalysisRuleKey(binding.getBinding());
+      return CompletableFuture.completedFuture(Map.of("crossFileAnalysisRuleKey", availableCrossFileAnalysisRuleKey));
+    } catch (RuntimeException e) {
+      return CompletableFuture.completedFuture(Map.of("crossFileAnalysisRuleKey", ""));
+    }
   }
 
 }
