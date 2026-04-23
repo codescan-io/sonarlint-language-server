@@ -921,16 +921,21 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
   }
 
   @Override
-  public CompletableFuture<Map<String, String>>  getAvailableCrossFileAnalysisRuleKey(FileParam params){
+  public void logCrossFileAnalysisLimitExceeded(FileParam param) {
+    lsLogOutput.warn(String.format(
+         "Rule '%s': Reference file limit reached. Results may be less accurate. Increase the limit for better accuracy or reduce it for faster analysis.",
+           getAvailableCrossFileAnalysisRuleKeyFrom(param)));
+  }
+
+  private String  getAvailableCrossFileAnalysisRuleKeyFrom(FileParam params){
     try {
       var binding = bindingManager.getBinding(create(params.getFileUri())).orElse(null);
       if (binding == null) {
-        return CompletableFuture.completedFuture(Map.of("crossFileAnalysisRuleKey", ""));
+        return "";
       }
-      String availableCrossFileAnalysisRuleKey = binding.getEngine().getAvailableCrossFileAnalysisRuleKey(binding.getBinding());
-      return CompletableFuture.completedFuture(Map.of("crossFileAnalysisRuleKey", availableCrossFileAnalysisRuleKey));
+      return binding.getEngine().getAvailableCrossFileAnalysisRuleKey(binding.getBinding());
     } catch (RuntimeException e) {
-      return CompletableFuture.completedFuture(Map.of("crossFileAnalysisRuleKey", ""));
+      return "";
     }
   }
 
