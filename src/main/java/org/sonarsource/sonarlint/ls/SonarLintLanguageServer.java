@@ -924,10 +924,10 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
   public void logCrossFileAnalysisLimitExceeded(FileParam param) {
     lsLogOutput.warn(String.format(
          "Rule '%s': Reference file limit reached. Results may be less accurate. Increase the limit for better accuracy or reduce it for faster analysis.",
-           getAvailableCrossFileAnalysisRuleKeyFrom(param)));
+           getAvailableCrossFileAnalysisRuleKey(param)));
   }
 
-  private String  getAvailableCrossFileAnalysisRuleKeyFrom(FileParam params){
+  private String  getAvailableCrossFileAnalysisRuleKey(FileParam params){
     try {
       var binding = bindingManager.getBinding(create(params.getFileUri())).orElse(null);
       if (binding == null) {
