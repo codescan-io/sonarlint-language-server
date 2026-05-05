@@ -33,7 +33,7 @@ class AnalysisClientInputFileTests {
   @ParameterizedTest(name = "Should detect {0} as {1}")
   @MethodSource("provideParametersForLanguageDetection")
   void shouldDetectLanguage(String clientLanguageId, Language expected) {
-    assertThat(new AnalysisClientInputFile(null, null, "", false, clientLanguageId).language())
+    assertThat(new AnalysisClientInputFile(null, null, "", false, clientLanguageId, null).language())
       .isEqualTo(expected);
   }
 

@@ -542,4 +542,41 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
   }
   @JsonRequest("codescan/checkIfConnectionIsCloud")
   CompletableFuture<Map<String, Boolean>> checkIfConnectionIsCloud(CheckIfCloudConnectionParams params);
+  class FileParam{
+    private final String fileUri;
+
+    public FileParam(String fileUri) {
+      this.fileUri = fileUri;
+    }
+
+    public String getFileUri() {
+      return fileUri;
+    }
+  }
+  @JsonRequest("codescan/checkIfCrossFileAnalysisIsEnabled")
+  CompletableFuture<Map<String, Boolean>> checkIfCrossFileAnalysisIsEnabled(FileParam params);
+
+  class CrossFileAnalysisParams {
+    private final TextDocumentItem fileOpened;
+    private final List<TextDocumentItem> referenceFiles;
+
+    public CrossFileAnalysisParams(TextDocumentItem fileOpened, List<TextDocumentItem> referenceFiles) {
+      this.fileOpened = fileOpened;
+      this.referenceFiles = referenceFiles;
+    }
+
+    public TextDocumentItem getFileOpened() {
+      return fileOpened;
+    }
+
+    public List<TextDocumentItem> getReferenceFiles() {
+      return referenceFiles;
+    }
+  }
+  @JsonNotification("codescan/didOpenWithCrossFileAnalysis")
+  void didOpenWithCrossFileAnalysis(CrossFileAnalysisParams params);
+  @JsonNotification("codescan/didChangeWithCrossFileAnalysis")
+  void didChangeWithCrossFileAnalysis(CrossFileAnalysisParams params);
+  @JsonNotification("codescan/logCrossFileAnalysisLimitExceeded")
+  void logCrossFileAnalysisLimitExceeded(FileParam param);
 }

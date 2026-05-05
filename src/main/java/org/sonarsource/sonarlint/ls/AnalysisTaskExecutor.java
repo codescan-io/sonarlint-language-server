@@ -376,8 +376,10 @@ public class AnalysisTaskExecutor {
         checkCanceled(task, progressFacade);
         filesSuccessfullyAnalyzed.remove(fileUri);
         var file = filesToAnalyze.get(fileUri);
-        issuesCache.analysisFailed(file);
-        securityHotspotsCache.analysisFailed(file);
+        if (file != null) {
+          issuesCache.analysisFailed(file);
+          securityHotspotsCache.analysisFailed(file);
+        }
       });
 
     if (!filesSuccessfullyAnalyzed.isEmpty()) {
@@ -543,8 +545,24 @@ public class AnalysisTaskExecutor {
       .addInputFiles(
         new AnalysisClientInputFile(uri, FileUtils.getFileRelativePath(baseDir, uri), openFile.getContent(),
           fileTypeClassifier.isTest(settings, uri, openFile.isJava(), () -> ofNullable(javaConfigs.get(uri))),
-          openFile.getLanguageId())));
+          openFile.getLanguageId(), buildDependencyInputFiles(openFile,baseDir,settings,javaConfigs))));
     return configurationBuilder;
+  }
+
+  private List<ClientInputFile> buildDependencyInputFiles(VersionedOpenFile openFile, Path baseDir, WorkspaceFolderSettings settings, Map<URI, GetJavaConfigResponse> javaConfigs) {
+    List<VersionedOpenFile> dependencies = openFile.getReferenceFiles();
+    if (dependencies == null) {
+      return null;
+    }
+
+    List<ClientInputFile> dependencyInputFiles = new ArrayList<>(dependencies.size());
+    for (var dependency : dependencies) {
+       dependencyInputFiles.add(new AnalysisClientInputFile(dependency.getUri(),
+               FileUtils.getFileRelativePath(baseDir, dependency.getUri()), dependency.getContent(),
+               fileTypeClassifier.isTest(settings, dependency.getUri(), dependency.isJava(),
+                      () -> ofNullable(javaConfigs.get(dependency.getUri()))), dependency.getLanguageId(), null));
+    }
+    return dependencyInputFiles;
   }
 
   private Map<String, String> getCodeScanProperties(WorkspaceFolderSettings settings) {
