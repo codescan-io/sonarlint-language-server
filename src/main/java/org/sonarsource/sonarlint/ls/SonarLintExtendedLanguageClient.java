@@ -546,6 +546,22 @@ public interface SonarLintExtendedLanguageClient extends LanguageClient {
   @JsonNotification("codescan/setReferenceBranchNameForFolder")
   void setReferenceBranchNameForFolder(ReferenceBranchForFolder newReferenceBranch);
 
+  class UpdateSeverityLabelsParams {
+
+    private final Map<String, String> labels;
+
+    public UpdateSeverityLabelsParams(Map<String, String> labels) {
+      this.labels = labels;
+    }
+
+    public Map<String, String> getLabels() {
+      return labels;
+    }
+  }
+
+  @JsonNotification("codescan/updateSeverityLabels")
+  void updateSeverityLabels(UpdateSeverityLabelsParams labels);
+
   @JsonNotification("codescan/needCompilationDatabase")
   void needCompilationDatabase();
 

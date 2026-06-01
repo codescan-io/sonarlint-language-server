@@ -23,6 +23,7 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +47,7 @@ import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEng
 import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.BindingConfigurationDto;
 import org.sonarsource.sonarlint.core.clientapi.backend.config.binding.DidUpdateBindingParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.validate.ValidateConnectionParams;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.log.ClientLogOutput;
 import org.sonarsource.sonarlint.core.commons.log.SonarLintLogger;
 import org.sonarsource.sonarlint.core.http.HttpClient;
@@ -227,6 +229,7 @@ public class ProjectBindingManager implements WorkspaceSettingsChangeListener, W
 
     var httpClient = backendServiceFacade.getHttpClient(connectionId);
     syncAtStartup(engine, endpointParams, projectKey, branchProvider, httpClient);
+    syncSeverityLabels(engine, projectKey);
 
     var ideFilePaths = FileUtils.allRelativePathsForFilesInTree(folderRoot);
     var projectBinding = engine.calculatePathPrefixes(projectKey, ideFilePaths);
@@ -235,6 +238,17 @@ public class ProjectBindingManager implements WorkspaceSettingsChangeListener, W
       folderRoot);
     var issueTrackerWrapper = new ServerIssueTrackerWrapper(engine, endpointParams, projectBinding, branchProvider, httpClient);
     return new ProjectBindingWrapper(connectionId, projectBinding, engine, issueTrackerWrapper);
+  }
+
+  private void syncSeverityLabels(ConnectedSonarLintEngine engine, String projectKey) {
+    var severitySuffix = "codescan.severity.masking.";
+    var allSettings = engine.getProjectSettings(projectKey);
+    var severityLabelsMap = Arrays.stream(IssueSeverity.values())
+            .collect(Collectors.toMap(
+                    IssueSeverity::name, sev ->
+                            allSettings.getOrDefault(severitySuffix + sev.name(), sev.name().charAt(0) + sev.name().substring(1).toLowerCase())
+            ));
+    client.updateSeverityLabels(new SonarLintExtendedLanguageClient.UpdateSeverityLabelsParams(severityLabelsMap));
   }
 
   private static void syncAtStartup(ConnectedSonarLintEngine engine, EndpointParams endpointParams, String projectKey,
