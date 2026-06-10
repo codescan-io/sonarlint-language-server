@@ -231,6 +231,7 @@
         <configuration>
           <nodeVersion>v16.13.2</nodeVersion>
           <workingDirectory>src/test/resources/fake-ts-project</workingDirectory>
+          <skip>${skipTests}</skip>
         </configuration>
         <executions>
           <execution>
