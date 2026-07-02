@@ -19,7 +19,6 @@
  */
 package org.sonarsource.sonarlint.ls;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -87,7 +86,6 @@ public class AnalysisScheduler implements WorkspaceSettingsChangeListener, Works
     this(lsLogOutput, workspaceFoldersManager, bindingManager, openFilesCache, openNotebooksCache, analysisTaskExecutor, DEFAULT_TIMER_MS);
   }
 
-  @VisibleForTesting
   AnalysisScheduler(LanguageClientLogger lsLogOutput, WorkspaceFoldersManager workspaceFoldersManager, ProjectBindingManager bindingManager, OpenFilesCache openFilesCache,
     OpenNotebooksCache openNotebooksCache, AnalysisTaskExecutor analysisTaskExecutor, long analysisTimerMs) {
     this.lsLogOutput = lsLogOutput;

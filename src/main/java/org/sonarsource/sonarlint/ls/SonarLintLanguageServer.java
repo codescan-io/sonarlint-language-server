@@ -19,7 +19,6 @@
  */
 package org.sonarsource.sonarlint.ls;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.JsonPrimitive;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -348,7 +347,6 @@ public class SonarLintLanguageServer implements SonarLintExtendedLanguageServer,
     });
   }
 
-  @VisibleForTesting
   public static boolean isEnableNotebooks(Map<String, Object> options) {
     return (boolean) options.getOrDefault("enableNotebooks", false);
   }
