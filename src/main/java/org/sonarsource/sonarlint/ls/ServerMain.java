@@ -19,7 +19,6 @@
  */
 package org.sonarsource.sonarlint.ls;
 
-import com.google.common.collect.ImmutableList;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +55,7 @@ public class ServerMain implements Callable<Integer> {
   }
 
   public List<Path> getAnalyzers() {
-    return ImmutableList.copyOf(analyzers);
+    return List.copyOf(analyzers);
   }
 
   @Override
