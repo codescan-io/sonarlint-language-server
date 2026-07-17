@@ -29,9 +29,8 @@ import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.jsonrpc.validation.NonNull;
+import java.util.Objects;
 import org.eclipse.lsp4j.services.LanguageServer;
-import org.eclipse.lsp4j.util.Preconditions;
-import org.eclipse.xtext.xbase.lib.Pure;
 import org.sonarsource.sonarlint.core.clientapi.backend.analysis.GetSupportedFilePatternsResponse;
 import org.sonarsource.sonarlint.core.clientapi.backend.binding.GetBindingSuggestionParams;
 import org.sonarsource.sonarlint.core.clientapi.backend.connection.auth.HelpGenerateUserTokenResponse;
@@ -91,17 +90,16 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
 
     public DidClasspathUpdateParams(@NonNull final String projectUri) {
-      this.projectUri = Preconditions.<String>checkNotNull(projectUri, "projectUri");
+      this.projectUri = Objects.<String>requireNonNull(projectUri, "projectUri");
     }
 
-    @Pure
     @NonNull
     public String getProjectUri() {
       return projectUri;
     }
 
     public void setProjectUri(@NonNull String projectUri) {
-      this.projectUri = Preconditions.checkNotNull(projectUri, "projectUri");
+      this.projectUri = Objects.requireNonNull(projectUri, "projectUri");
     }
 
   }
@@ -141,17 +139,16 @@ public interface SonarLintExtendedLanguageServer extends LanguageServer {
     }
 
     public DidJavaServerModeChangeParams(@NonNull final String serverMode) {
-      this.serverMode = Preconditions.<String>checkNotNull(serverMode, "serverMode");
+      this.serverMode = Objects.<String>requireNonNull(serverMode, "serverMode");
     }
 
-    @Pure
     @NonNull
     public String getServerMode() {
       return serverMode;
     }
 
     public void setServerMode(@NonNull String serverMode) {
-      this.serverMode = Preconditions.checkNotNull(serverMode, "serverMode");
+      this.serverMode = Objects.requireNonNull(serverMode, "serverMode");
     }
 
   }
