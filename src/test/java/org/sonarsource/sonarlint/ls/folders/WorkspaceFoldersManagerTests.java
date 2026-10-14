@@ -172,7 +172,7 @@ class WorkspaceFoldersManagerTests {
 
     assertThat(underTest.getAll()).extracting(WorkspaceFolderWrapper::getRootPath).containsExactly(basedir);
     assertThat(logTester.logs()).containsExactly("Processing didChangeWorkspaceFolders event",
-      "Folder WorkspaceFolder[name=<null>,uri=" + basedir.toUri() + "] added");
+      "Folder WorkspaceFolder[name=workspace,uri=" + basedir.toUri() + "] added");
 
     logTester.clear();
 
@@ -181,7 +181,7 @@ class WorkspaceFoldersManagerTests {
 
     assertThat(underTest.getAll()).extracting(WorkspaceFolderWrapper::getRootPath).containsExactly(basedir);
     assertThat(logTester.logs()).containsExactly("Processing didChangeWorkspaceFolders event",
-      "Registered workspace folder WorkspaceFolder[name=<null>,uri=" + basedir.toUri() + "] was already added");
+      "Registered workspace folder WorkspaceFolder[name=workspace,uri=" + basedir.toUri() + "] was already added");
   }
 
   @Test
@@ -198,7 +198,7 @@ class WorkspaceFoldersManagerTests {
 
     assertThat(underTest.getAll()).isEmpty();
     assertThat(logTester.logs()).containsExactly("Processing didChangeWorkspaceFolders event",
-      "Folder WorkspaceFolder[name=<null>,uri=" + basedir.toUri() + "] removed");
+      "Folder WorkspaceFolder[name=workspace,uri=" + basedir.toUri() + "] removed");
 
     logTester.clear();
 
@@ -226,6 +226,6 @@ class WorkspaceFoldersManagerTests {
   }
 
   private static WorkspaceFolder mockWorkspaceFolder(URI uri) {
-    return new WorkspaceFolder(uri.toString());
+    return new WorkspaceFolder(uri.toString(), "workspace");
   }
 }

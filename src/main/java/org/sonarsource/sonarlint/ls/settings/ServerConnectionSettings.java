@@ -19,6 +19,7 @@
  */
 package org.sonarsource.sonarlint.ls.settings;
 
+import java.lang.reflect.Field;
 import java.util.Objects;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
@@ -127,6 +128,24 @@ public class ServerConnectionSettings {
 
   @Override
   public String toString() {
-    return new ReflectionToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).setExcludeFieldNames("endpointParams", "validateConnectionParams").toString();
+    return new ReflectionToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE) {
+      @Override
+      protected Object getValue(Field field) throws IllegalAccessException {
+        return "token".equals(field.getName()) ? maskToken(token) : super.getValue(field);
+      }
+    }.setExcludeFieldNames("endpointParams", "validateConnectionParams").toString();
+  }
+
+  /**
+   * Keeps the first 6 characters of the token and replaces the rest with '*', so logs never contain the full secret.
+   * Tokens of 6 characters or fewer are masked entirely.
+   */
+  @CheckForNull
+  static String maskToken(@Nullable String token) {
+    if (token == null) {
+      return null;
+    }
+    var visible = token.length() > 6 ? 6 : 0;
+    return token.substring(0, visible) + "*".repeat(token.length() - visible);
   }
 }

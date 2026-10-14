@@ -87,7 +87,7 @@ class BackendServiceTests {
     var connectionId = "connectionId";
     var binding = mock(ProjectBinding.class);
     var bindingWrapper = new ProjectBindingWrapper(connectionId, binding, mock(ConnectedSonarLintEngine.class), mock(ServerIssueTrackerWrapper.class));
-    var result = underTest.getConfigScopeDto(new WorkspaceFolder(workspaceUri), Optional.of(bindingWrapper));
+    var result = underTest.getConfigScopeDto(new WorkspaceFolder(workspaceUri, "workspace"), Optional.of(bindingWrapper));
 
     assertThat(result.getId()).isEqualTo(workspaceUri);
     assertThat(result.getParentId()).isEqualTo(BackendServiceFacade.ROOT_CONFIGURATION_SCOPE);
@@ -97,7 +97,7 @@ class BackendServiceTests {
   @Test
   void getConfigScopeDtoWithoutBinding() {
     var workspaceUri = "/workspace";
-    var result = underTest.getConfigScopeDto(new WorkspaceFolder(workspaceUri), Optional.empty());
+    var result = underTest.getConfigScopeDto(new WorkspaceFolder(workspaceUri, "workspace"), Optional.empty());
 
     assertThat(result.getId()).isEqualTo(workspaceUri);
     assertThat(result.getParentId()).isEqualTo(BackendServiceFacade.ROOT_CONFIGURATION_SCOPE);
