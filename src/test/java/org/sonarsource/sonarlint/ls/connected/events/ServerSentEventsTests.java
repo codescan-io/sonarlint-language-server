@@ -315,7 +315,7 @@ class ServerSentEventsTests {
 
     when(fakeEngine.getServerTaintIssues(any(ProjectBinding.class), eq(BRANCH_NAME), eq(FILE_PHP))).thenReturn(issuesList);
     when(settingsManager.getCurrentSettings()).thenReturn(newWorkspaceSettingsWithServers(Map.of(CONNECTION_ID, GLOBAL_SETTINGS)));
-    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString()))));
+    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString(), "workspace"))));
 
     // Event for new issue is received
     TaintVulnerabilityRaisedEvent fakeEvent = new TaintVulnerabilityRaisedEvent(ISSUE_KEY2, PROJECT_KEY, BRANCH_NAME, CREATION_DATE, RULE_KEY,
@@ -336,7 +336,7 @@ class ServerSentEventsTests {
 
     when(fakeEngine.getServerTaintIssues(any(ProjectBinding.class), eq(BRANCH_NAME), eq(FILE_PHP))).thenReturn(issuesList);
     when(settingsManager.getCurrentSettings()).thenReturn(newWorkspaceSettingsWithServers(Map.of(CONNECTION_ID, GLOBAL_SETTINGS_DISABLED_NOTIFICATIONS)));
-    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString()))));
+    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString(), "workspace"))));
 
     // Event for new issue is received
     TaintVulnerabilityRaisedEvent fakeEvent = new TaintVulnerabilityRaisedEvent(ISSUE_KEY2, PROJECT_KEY, BRANCH_NAME, CREATION_DATE, RULE_KEY,
@@ -357,7 +357,7 @@ class ServerSentEventsTests {
 
     when(fakeEngine.getServerTaintIssues(any(ProjectBinding.class), eq(CURRENT_BRANCH_NAME), eq(FILE_PHP))).thenReturn(issuesList);
     when(settingsManager.getCurrentSettings()).thenReturn(newWorkspaceSettingsWithServers(Map.of(CONNECTION_ID, GLOBAL_SETTINGS_DISABLED_NOTIFICATIONS)));
-    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString()))));
+    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString(), "workspace"))));
 
     // Event for new issue is received
     TaintVulnerabilityRaisedEvent fakeEvent = new TaintVulnerabilityRaisedEvent(ISSUE_KEY2, PROJECT_KEY, CURRENT_BRANCH_NAME, CREATION_DATE, RULE_KEY,
@@ -378,7 +378,7 @@ class ServerSentEventsTests {
 
     when(fakeEngine.getServerTaintIssues(any(ProjectBinding.class), eq(CURRENT_BRANCH_NAME), eq(FILE_PHP))).thenReturn(issuesList);
     when(settingsManager.getCurrentSettings()).thenReturn(newWorkspaceSettingsWithServers(Collections.emptyMap()));
-    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString()))));
+    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString(), "workspace"))));
 
     // Event for new issue is received
     TaintVulnerabilityRaisedEvent fakeEvent = new TaintVulnerabilityRaisedEvent(ISSUE_KEY2, PROJECT_KEY, CURRENT_BRANCH_NAME, CREATION_DATE, RULE_KEY,
@@ -402,7 +402,7 @@ class ServerSentEventsTests {
 
     when(fakeEngine.getServerTaintIssues(any(ProjectBinding.class), eq(CURRENT_BRANCH_NAME), eq(FILE_PHP))).thenReturn(issuesList);
     when(settingsManager.getCurrentSettings()).thenReturn(newWorkspaceSettingsWithServers(Collections.emptyMap()));
-    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString()))));
+    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString(), "workspace"))));
 
     // Event for new issue is received
     TaintVulnerabilityRaisedEvent fakeEvent = new TaintVulnerabilityRaisedEvent(ISSUE_KEY2, PROJECT_KEY, CURRENT_BRANCH_NAME, CREATION_DATE, RULE_KEY,
@@ -427,7 +427,7 @@ class ServerSentEventsTests {
       "context", "assignedPerson");
 
     when(settingsManager.getCurrentSettings()).thenReturn(newWorkspaceSettingsWithServers(Map.of(CONNECTION_ID, GLOBAL_SETTINGS)));
-    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString()))));
+    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString(), "workspace"))));
 
     underTest.handleEvents(hotspotRaisedEvent);
 
@@ -438,7 +438,7 @@ class ServerSentEventsTests {
   void shouldScheduleAnalysisForFileOnHotspotChanged() {
     prepareForServerEventTests();
     when(settingsManager.getCurrentSettings()).thenReturn(newWorkspaceSettingsWithServers(Map.of(CONNECTION_ID, GLOBAL_SETTINGS)));
-    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString()))));
+    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString(), "workspace"))));
 
     var hotspotChangedEvent = new SecurityHotspotChangedEvent("hotspotKey2", PROJECT_KEY, Instant.now(), HotspotReviewStatus.SAFE,
       "test@user.com", fileInAWorkspaceFolderPath.toUri().toString());
@@ -452,7 +452,7 @@ class ServerSentEventsTests {
   void shouldScheduleAnalysisForFileOnHotspotClosed() {
     prepareForServerEventTests();
     when(settingsManager.getCurrentSettings()).thenReturn(newWorkspaceSettingsWithServers(Map.of(CONNECTION_ID, GLOBAL_SETTINGS)));
-    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString()))));
+    when(workspaceFoldersManager.findFolderForFile(any(URI.class))).thenReturn(Optional.of(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toString(), "workspace"))));
 
     var hotspotClosedEvent = new SecurityHotspotClosedEvent(PROJECT_KEY, "hotspotKey2", fileInAWorkspaceFolderPath.toUri().toString());
 
@@ -478,7 +478,7 @@ class ServerSentEventsTests {
   }
 
   private void mockFileInAFolder() {
-    var folderWrapper = spy(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toUri().toString())));
+    var folderWrapper = spy(new WorkspaceFolderWrapper(workspaceFolderPath.toUri(), new WorkspaceFolder(workspaceFolderPath.toUri().toString(), "workspace")));
     when(foldersManager.findFolderForFile(fileInAWorkspaceFolderPath.toUri())).thenReturn(Optional.of(folderWrapper));
   }
 }

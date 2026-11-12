@@ -264,7 +264,7 @@ public abstract class AbstractLanguageServerMediumTests {
     }
     var changeWorkspaceFoldersParams = new DidChangeWorkspaceFoldersParams();
     var event = new WorkspaceFoldersChangeEvent();
-    event.setRemoved(foldersToRemove.stream().map(WorkspaceFolder::new).collect(Collectors.toList()));
+    event.setRemoved(foldersToRemove.stream().map(uri -> new WorkspaceFolder(uri, uri)).collect(Collectors.toList()));
     changeWorkspaceFoldersParams.setEvent(event);
     lsProxy.getWorkspaceService().didChangeWorkspaceFolders(changeWorkspaceFoldersParams);
     instanceTempDirs.forEach(tempDirPath -> FileUtils.deleteQuietly(tempDirPath.toFile()));

@@ -699,7 +699,7 @@ class LanguageServerMediumTests extends AbstractLanguageServerMediumTests {
     client.suggestBindingLatch = new CountDownLatch(1);
     var basedir = Paths.get("path/to/base").toAbsolutePath();
     var workspaceUri = basedir.toUri().toString();
-    var workspaceFolder = new WorkspaceFolder(workspaceUri);
+    var workspaceFolder = new WorkspaceFolder(workspaceUri, "workspace");
     getFolderSettings(workspaceUri);
     foldersToRemove.add(workspaceUri);
     lsProxy.getWorkspaceService().didChangeWorkspaceFolders(new DidChangeWorkspaceFoldersParams(

@@ -25,35 +25,46 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ServerConnectionSettingsTests {
 
-  private static final ServerConnectionSettings WITHOUT_ORG = new ServerConnectionSettings("serverId", "serverUrl", "token", null, false);
-  private static final ServerConnectionSettings WITH_ORG = new ServerConnectionSettings("serverId", "serverUrl", "token", "myOrg", false);
+  private static final ServerConnectionSettings WITHOUT_ORG = new ServerConnectionSettings("serverId", "https://app.codescan.io", "token", null, false);
+  private static final ServerConnectionSettings WITH_ORG = new ServerConnectionSettings("serverId", "https://app.codescan.io", "token", "myOrg", false);
 
   @Test
   void testHashCode() {
-    assertThat(new ServerConnectionSettings("serverId", "serverUrl", "token", "myOrg", false)).hasSameHashCodeAs(WITH_ORG);
-    assertThat(new ServerConnectionSettings("serverId", "serverUrl", "token", null, false)).hasSameHashCodeAs(WITHOUT_ORG);
+    assertThat(new ServerConnectionSettings("serverId", "https://app.codescan.io", "token", "myOrg", false)).hasSameHashCodeAs(WITH_ORG);
+    assertThat(new ServerConnectionSettings("serverId", "https://app.codescan.io", "token", null, false)).hasSameHashCodeAs(WITHOUT_ORG);
   }
 
   @Test
   void testEquals() {
     assertThat(WITH_ORG)
       .isEqualTo(WITH_ORG)
-      .isEqualTo(new ServerConnectionSettings("serverId", "serverUrl", "token", "myOrg", false))
+      .isEqualTo(new ServerConnectionSettings("serverId", "https://app.codescan.io", "token", "myOrg", false))
       .isNotEqualTo(null)
       .isNotEqualTo("foo")
-      .isNotEqualTo(new ServerConnectionSettings("serverId2", "serverUrl", "token", "myOrg", false))
-      .isNotEqualTo(new ServerConnectionSettings("serverId", "serverUrl2", "token", "myOrg", false))
-      .isNotEqualTo(new ServerConnectionSettings("serverId", "serverUrl", "token2", "myOrg", false))
-      .isNotEqualTo(new ServerConnectionSettings("serverId", "serverUrl", "token", "myOrg2", false))
-      .isNotEqualTo(new ServerConnectionSettings("serverId", "serverUrl", "token", "myOrg2", true));
+      .isNotEqualTo(new ServerConnectionSettings("serverId2", "https://app.codescan.io", "token", "myOrg", false))
+      .isNotEqualTo(new ServerConnectionSettings("serverId", "https://other.codescan.io", "token", "myOrg", false))
+      .isNotEqualTo(new ServerConnectionSettings("serverId", "https://app.codescan.io", "token2", "myOrg", false))
+      .isNotEqualTo(new ServerConnectionSettings("serverId", "https://app.codescan.io", "token", "myOrg2", false))
+      .isNotEqualTo(new ServerConnectionSettings("serverId", "https://app.codescan.io", "token", "myOrg2", true));
     assertThat(WITHOUT_ORG)
-      .isEqualTo(new ServerConnectionSettings("serverId", "serverUrl", "token", null, false))
+      .isEqualTo(new ServerConnectionSettings("serverId", "https://app.codescan.io", "token", null, false))
       .isNotEqualTo(WITH_ORG);
   }
 
   @Test
   void testToString() {
-    assertThat(WITH_ORG).hasToString("ServerConnectionSettings[connectionId=serverId,disableNotifications=false,organizationKey=myOrg,serverUrl=serverUrl,token=token]");
+    assertThat(WITH_ORG).hasToString("ServerConnectionSettings[connectionId=serverId,disableNotifications=false,organizationKey=myOrg,serverUrl=https://app.codescan.io,token=*****]");
+    assertThat(new ServerConnectionSettings("serverId", "https://app.codescan.io", "abcdef123456", null, false).toString())
+      .contains("token=abcdef******")
+      .doesNotContain("123456");
+  }
+
+  @Test
+  void testMaskToken() {
+    assertThat(ServerConnectionSettings.maskToken(null)).isNull();
+    assertThat(ServerConnectionSettings.maskToken("")).isEmpty();
+    assertThat(ServerConnectionSettings.maskToken("abcdef")).isEqualTo("******");
+    assertThat(ServerConnectionSettings.maskToken("abcdefg")).isEqualTo("abcdef*");
   }
 
 }
