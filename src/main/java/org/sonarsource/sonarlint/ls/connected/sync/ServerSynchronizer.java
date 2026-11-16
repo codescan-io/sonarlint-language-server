@@ -19,11 +19,13 @@
  */
 package org.sonarsource.sonarlint.ls.connected.sync;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.lsp4j.MessageParams;
@@ -81,8 +83,9 @@ public class ServerSynchronizer {
 
   private void updateBindings(Map<String, Map<String, Set<String>>> projectKeyByConnectionIdsToUpdate,
     ProgressFacade progress) {
-    var failedConnectionIds = tryUpdateConnectionsAndBoundProjectStorages(projectKeyByConnectionIdsToUpdate, progress);
-    showOperationResult(failedConnectionIds);
+    var ipAllowlistBlocks = new LinkedHashMap<String, String>();
+    var failedConnectionIds = tryUpdateConnectionsAndBoundProjectStorages(projectKeyByConnectionIdsToUpdate, ipAllowlistBlocks, progress);
+    showOperationResult(failedConnectionIds, ipAllowlistBlocks);
     triggerAnalysisOfAllOpenFilesInBoundFolders(failedConnectionIds);
   }
 
@@ -94,28 +97,37 @@ public class ServerSynchronizer {
     });
   }
 
-  private void showOperationResult(Set<String> failedConnectionIds) {
+  private void showOperationResult(Set<String> failedConnectionIds, Map<String, String> ipAllowlistBlocks) {
     if (failedConnectionIds.isEmpty()) {
       client.showMessage(new MessageParams(MessageType.Info, "All CodeScan bindings successfully updated"));
-    } else {
-      var connections = String.join(", ", failedConnectionIds);
+      return;
+    }
+    ipAllowlistBlocks.forEach((connectionId, message) -> client.showMessage(
+      new MessageParams(MessageType.Error, "CodeScan connection '" + connectionId + "': " + message + " " + IpAllowlistBlock.ADVICE)));
+    var otherFailures = failedConnectionIds.stream()
+      .filter(connectionId -> !ipAllowlistBlocks.containsKey(connectionId))
+      .collect(Collectors.toList());
+    if (!otherFailures.isEmpty()) {
+      var connections = String.join(", ", otherFailures);
       client.showMessage(
         new MessageParams(MessageType.Error, "Binding update failed for the following connection(s): " + connections + ". Look at the CodeScan output for details."));
     }
   }
 
-  private Set<String> tryUpdateConnectionsAndBoundProjectStorages(Map<String, Map<String, Set<String>>> projectKeyByConnectionIdsToUpdate, ProgressFacade progress) {
+  private Set<String> tryUpdateConnectionsAndBoundProjectStorages(Map<String, Map<String, Set<String>>> projectKeyByConnectionIdsToUpdate,
+    Map<String, String> ipAllowlistBlocks, ProgressFacade progress) {
     var failedConnectionIds = new LinkedHashSet<String>();
     projectKeyByConnectionIdsToUpdate.forEach(
       (connectionId, projectKeys) -> {
         var progressFraction = 1.0f / projectKeyByConnectionIdsToUpdate.size();
         var httpClient = backendServiceFacade.getHttpClient(connectionId);
-        tryUpdateConnectionAndBoundProjectsStorages(progress, failedConnectionIds, connectionId, projectKeys, progressFraction, httpClient);
+        tryUpdateConnectionAndBoundProjectsStorages(progress, failedConnectionIds, ipAllowlistBlocks, connectionId, projectKeys, progressFraction, httpClient);
       });
     return failedConnectionIds;
   }
 
-  private void tryUpdateConnectionAndBoundProjectsStorages(ProgressFacade progress, Set<String> failedConnectionIds, String connectionId,
+  private void tryUpdateConnectionAndBoundProjectsStorages(ProgressFacade progress, Set<String> failedConnectionIds, Map<String, String> ipAllowlistBlocks,
+    String connectionId,
     Map<String, Set<String>> branchNamesByProjectKey, float progressFraction, HttpClient httpClient) {
     progress.doInSubProgress(connectionId, progressFraction, subProgress -> {
       var endpointParams = bindingManager.getEndpointParamsFor(connectionId);
@@ -129,14 +141,14 @@ public class ServerSynchronizer {
         return;
       }
       subProgress.doInSubProgress("Update projects storages", 0.5f, s -> tryUpdateBoundProjectsStorage(
-              connectionId, branchNamesByProjectKey.keySet(), endpointParams, failedConnectionIds, engineOpt.get(), httpClient, s));
+              connectionId, branchNamesByProjectKey.keySet(), endpointParams, failedConnectionIds, ipAllowlistBlocks, engineOpt.get(), httpClient, s));
       subProgress.doInSubProgress("Sync projects storages", 0.5f, s -> syncOneEngine(
         connectionId, branchNamesByProjectKey, engineOpt.get(), httpClient, s));
     });
   }
 
   private static void tryUpdateBoundProjectsStorage(String connectionId, Set<String> projectKeys, EndpointParams endpointParams, Set<String> failedConnectionIds,
-    ConnectedSonarLintEngine engine, HttpClient httpClient, ProgressFacade progress) {
+    Map<String, String> ipAllowlistBlocks, ConnectedSonarLintEngine engine, HttpClient httpClient, ProgressFacade progress) {
     projectKeys.forEach(projectKey -> progress.doInSubProgress(projectKey, 1.0f / projectKeys.size(), subProgress -> {
       try {
         engine.updateProject(endpointParams, httpClient, projectKey, subProgress.asCoreMonitor());
@@ -145,6 +157,7 @@ public class ServerSynchronizer {
       } catch (Exception updateFailed) {
         LOG.error("Binding update failed for project key '{}'", projectKey, updateFailed);
         failedConnectionIds.add(connectionId);
+        IpAllowlistBlock.find(updateFailed).ifPresent(message -> ipAllowlistBlocks.putIfAbsent(connectionId, message));
       }
     }));
   }

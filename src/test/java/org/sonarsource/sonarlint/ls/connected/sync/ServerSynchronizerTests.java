@@ -74,6 +74,8 @@ import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -318,7 +320,58 @@ class ServerSynchronizerTests {
 
     underTest.updateAllBindings(mock(CancelChecker.class), null);
 
-    verify(client).showMessage(new MessageParams(MessageType.Info, "All SonarLint bindings successfully updated"));
+    verify(client).showMessage(new MessageParams(MessageType.Info, "All CodeScan bindings successfully updated"));
+  }
+
+  @Test
+  void shows_the_ip_allowlist_message_once_when_a_project_update_is_blocked() {
+    var blocked = "Access to organization 'acme' is blocked by its IP allowlist. Your IP address is 203.0.113.9.";
+    var folder1 = mockFileInABoundWorkspaceFolder();
+    when(foldersManager.getAll()).thenReturn(List.of(folder1));
+    when(enginesFactory.createConnectedEngine(anyString(), any(ServerConnectionSettings.class))).thenReturn(fakeEngine);
+    doThrow(new RuntimeException("Failed", new IllegalStateException(blocked)))
+      .when(fakeEngine).updateProject(any(), any(), eq(PROJECT_KEY), any());
+    bindingManager.getOrCreateConnectedEngine(CONNECTION_ID);
+
+    underTest.updateAllBindings(mock(CancelChecker.class), null);
+
+    var captor = ArgumentCaptor.forClass(MessageParams.class);
+    verify(client, atLeastOnce()).showMessage(captor.capture());
+    assertThat(captor.getAllValues()).extracting(MessageParams::getMessage)
+      .containsExactly("CodeScan connection '" + CONNECTION_ID + "': " + blocked
+        + " Ask an administrator of the organization to add your network to the IP allowlist.");
+    assertThat(captor.getValue().getType()).isEqualTo(MessageType.Error);
+  }
+
+  @Test
+  void keeps_the_generic_message_for_other_failures() {
+    var folder1 = mockFileInABoundWorkspaceFolder();
+    when(foldersManager.getAll()).thenReturn(List.of(folder1));
+    when(enginesFactory.createConnectedEngine(anyString(), any(ServerConnectionSettings.class))).thenReturn(fakeEngine);
+    doThrow(new IllegalStateException("Error 500 on http://foo: boom"))
+      .when(fakeEngine).updateProject(any(), any(), eq(PROJECT_KEY), any());
+    bindingManager.getOrCreateConnectedEngine(CONNECTION_ID);
+
+    underTest.updateAllBindings(mock(CancelChecker.class), null);
+
+    var captor = ArgumentCaptor.forClass(MessageParams.class);
+    verify(client, atLeastOnce()).showMessage(captor.capture());
+    assertThat(captor.getAllValues()).extracting(MessageParams::getMessage)
+      .containsExactly("Binding update failed for the following connection(s): " + CONNECTION_ID + ". Look at the CodeScan output for details.");
+  }
+
+  @Test
+  void background_sync_does_not_show_the_ip_allowlist_message() {
+    var folder1 = mockFileInABoundWorkspaceFolder();
+    when(foldersManager.getAll()).thenReturn(List.of(folder1));
+    when(enginesFactory.createConnectedEngine(anyString(), any(ServerConnectionSettings.class))).thenReturn(fakeEngine);
+    doThrow(new IllegalStateException("Access to organization 'acme' is blocked by its IP allowlist. Your IP address is 203.0.113.9."))
+      .when(fakeEngine).sync(any(), any(), any(), any());
+    bindingManager.getOrCreateConnectedEngine(CONNECTION_ID);
+
+    syncTask.run();
+
+    verify(client, times(0)).showMessage(any());
   }
 
   @Test
